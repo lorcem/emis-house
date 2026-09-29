@@ -1,9 +1,0 @@
-{
-  "name": "Emi's House 2.0",
-  "short_name": "Emi's House",
-  "start_url": "./",
-  "scope": "./",
-  "display": "standalone",
-  "background_color": "#F8F4EA",
-  "theme_color": "#768E78"
-}
