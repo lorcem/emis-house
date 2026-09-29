@@ -1,0 +1,13 @@
+EMI'S HOUSE — GITHUB PAGES
+
+Upload the FILES INSIDE this ZIP directly to the ROOT of your `emis-house` repository.
+
+Your repository should immediately show index.html at the top level. It must NOT be inside another folder.
+
+GitHub Pages settings:
+Source: Deploy from a branch
+Branch: main
+Folder: /(root)
+
+Then visit:
+https://lorcem.github.io/emis-house/
