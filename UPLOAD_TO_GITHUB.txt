@@ -1,0 +1,11 @@
+EMI'S HOUSE 2.3
+Dashboard order:
+Coming Up
+Spending Budgets
+Current Paycheck
+Upcoming Bills
+Paycheck Controls
+remaining dashboard cards
+Countdowns LAST
+
+Upload the files inside this ZIP directly to the root of the emis-house GitHub repository and replace the existing files.
