@@ -321,6 +321,32 @@ body{background:var(--eh-bg)!important}
 
 
 .bill-row{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line)}.bill-row:last-child{border-bottom:0}.bill-main{display:flex;align-items:center;gap:10px;min-width:0}.bill-main input{width:18px;height:18px;flex:0 0 auto}.bill-side{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap}.budget-edit-row{display:grid;grid-template-columns:minmax(0,1fr) 110px auto;gap:8px;margin:10px 0;align-items:center}.budget-edit-row input{width:100%;min-width:0}.bill-form{margin-top:16px}.bill-form label{min-width:0}@media(max-width:600px){.bill-row{align-items:flex-start}.bill-side{max-width:46%}.budget-edit-row{grid-template-columns:minmax(0,1fr) 92px}.budget-edit-row .danger{grid-column:1/-1;justify-self:end}}
+#bills .bill-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:12px;padding:12px 0}
+#bills .bill-main{display:grid;grid-template-columns:22px minmax(0,1fr);gap:12px;align-items:center}
+#bills .bill-main input[type=checkbox]{width:22px!important;max-width:22px!important;height:22px;padding:0!important;margin:0;accent-color:var(--fern)}
+#bills .bill-main strong{display:block;overflow-wrap:anywhere}
+#bills .bill-main .muted{margin-top:3px;white-space:nowrap}
+#bills .bill-side{max-width:none;flex-wrap:nowrap;gap:10px}
+#bills .bill-side .money{white-space:nowrap;font-variant-numeric:tabular-nums}
+#bills .bill-side button{flex-shrink:0}
+@media(max-width:380px){#bills .bill-row{grid-template-columns:minmax(0,1fr);gap:6px}#bills .bill-side{padding-left:34px;justify-content:flex-start}#bills .bill-side .money{margin-right:auto}}
+
+/* Consistent motion for navigation, sheets, and controls. */
+:root{--motion-ease:cubic-bezier(.22,1,.36,1)}
+.page.active{animation:none}
+.page.active .card{animation:none}
+.modal{display:flex;visibility:hidden;opacity:0;pointer-events:none;transition:opacity .22s ease,visibility .22s;}
+.modal.show{visibility:visible;opacity:1;pointer-events:auto}
+.modal .modalbox{animation:none!important;transform:translateY(32px);opacity:0;transition:transform .32s var(--motion-ease),opacity .22s ease}
+.modal.show .modalbox{transform:translateY(0);opacity:1}
+.collapsible-form>summary{transition:background-color .2s ease,box-shadow .2s ease}
+.collapsible-form>summary span{transition:transform .25s var(--motion-ease)}
+.collapsible-form[open]>summary span{transform:rotate(45deg)}
+.task-item,.weekday,.eh-toggle,.eh-toggle:after,.fill{transition:transform .22s var(--motion-ease),background-color .22s ease,box-shadow .22s ease,left .22s ease,width .35s var(--motion-ease)}
+button:focus-visible,summary:focus-visible{outline:3px solid var(--fern);outline-offset:3px}
+.toast{bottom:calc(100px + env(safe-area-inset-bottom));max-width:calc(100% - 32px);text-align:center}
+@media(hover:hover){.weekday:hover{transform:translateY(-2px)}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto!important}.modal .modalbox{transform:none!important}.page.active{animation:none!important}}
 </style>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#768E78">
@@ -341,7 +367,7 @@ body{background:var(--eh-bg)!important}
 
 <div class="grid"></div><section class="hero-date"><div class="funky-star star-a"></div><div class="funky-star star-b"></div><h2 class="hero-greeting" id="greetingText">Good afternoon, Emi</h2><div class="hero-sub" id="todayDate"></div></section><div id="marinaToday"></div>
 <section class="week-card"><div class="sectionhead"><h2>This Week</h2><span class="badge">Sunday – Saturday</span></div><div class="weekbar" id="weekStrip"></div></section>
-<section class="card"><div class="sectionhead"><h2>Spending Budgets</h2><button class="secondary tiny" onclick="openManageBudgets()">Edit</button></div><div id="budgets"></div></section>
+<section class="card"><div class="sectionhead"><h2>Spending Budgets</h2><button class="secondary tiny" onclick="openManageBudgets()">Edit Limits</button></div><div id="budgets"></div></section>
 <div class="dashboard-grid"><section class="card"><div class="sectionhead"><h2>Today's Schedule</h2><button class="secondary tiny" onclick="showQuickSchedule()">Add</button></div><div id="todaySchedule"></div></section><section class="card"><div class="sectionhead"><h2>Today's Tasks</h2><button class="secondary tiny" onclick="showQuickTask()">Add</button></div><div id="todayTasks"></div></section></div>
 <section class="card stripe-accent"><div class="sectionhead"><h2>Countdowns</h2><span class="badge">Coming up</span></div><div id="countdowns" class="countdown-grid"></div></section></main>
 
@@ -379,12 +405,13 @@ body{background:var(--eh-bg)!important}
 <label><span class="muted">Date</span><input id="marinaDate" type="date"></label>
 <label><span class="muted">Marina with</span><select id="marinaWith"><option value="Mom">Mom</option><option value="Dad">Dad</option></select></label>
 <label><span class="muted">Repeat</span><select id="marinaRepeat"><option value="none">Never</option><option value="daily">Daily</option><option value="every2days">Every 2 days</option><option value="every3days">Every 3 days</option><option value="every4days">Every 4 days</option><option value="every5days">Every 5 days</option><option value="weekdays">Weekdays</option><option value="weekly">Weekly</option><option value="biweekly">Every 2 weeks</option><option value="monthly">Monthly</option><option value="yearly">Yearly</option></select></label>
-</div><div class="actions"><button onclick="addMarinaDay()">Add Marina Day</button></div></details></section>
+</div><div class="actions"><button id="marinaSaveButton" onclick="addMarinaDay()">Add Marina Day</button><button id="marinaCancelButton" class="secondary" onclick="cancelMarinaEdit()" hidden>Cancel edit</button></div></details><p class="muted">Editing or deleting a repeating Marina day applies to the entire schedule.</p><div id="marinaDayList"></div></section>
 </main>
 
 <main id="expensesPage" class="page">
 <section class="card money-card budget-hero"><div class="sectionhead"><div><div class="budget-kicker">Money Overview</div><h2>Budget</h2></div><span class="badge budget-payday" id="budgetPayday"></span></div><div class="safe-big">$<span id="safeHero">0.00</span></div><div class="safe-caption">Safe to spend</div><div class="finance-mini"><div><div class="label">Balance</div><strong>$<span id="bank">0.00</span></strong></div><div><div class="label">Reserved</div><strong>$<span id="reserved">0.00</span></strong></div><div><div class="label">Safe</div><strong>$<span id="safe">0.00</span></strong></div></div></section>
 <section class="card budget-section"><div class="sectionhead"><h2>Current Paycheck</h2><span class="badge" id="currentPayLabel"></span></div><div class="tabs budget-pay-tabs" id="tabs"></div><div class="budget-input-block"><div class="muted">Actual paycheck / starting balance</div><input id="paycheck" type="number" step=".01"></div></section>
+<section class="card budget-section"><div class="sectionhead"><h2>Spending Budgets</h2><button class="secondary tiny" onclick="openManageBudgets()">Edit Limits</button></div><div id="budgetPageBudgets"></div></section>
 <section class="card budget-section"><div class="sectionhead"><h2>Upcoming Bills</h2><button class="secondary tiny" onclick="openAddBill()">Add Bill</button></div><div id="bills"></div></section>
 <section class="card budget-section savings-card"><div class="sectionhead"><h2>Savings Goals</h2><span class="badge">Progress</span></div><div id="goals"></div></section>
 <section class="card budget-section add-expense-card"><h2>Add Expense</h2><div class="expense-form-space form"><select id="category"><option>Groceries</option><option>Gas</option><option>Marina</option><option>Personal</option><option>Eating Out</option><option>Rent</option><option>Daycare</option><option>Car Insurance</option><option>Subscriptions</option><option>GLP-1</option><option>Christmas</option><option>Savings</option><option>Other</option></select><input id="amount" type="number" step=".01" placeholder="Amount"><input id="expenseDate" type="date"><input id="note" class="wide" placeholder="Store, description, or note"></div><div class="actions"><button onclick="addExpense()">Add Expense</button></div></section>
@@ -435,7 +462,7 @@ body{background:var(--eh-bg)!important}
 </section>
 </main>
 
-<div id="toast" class="toast"></div>
+<div id="toast" class="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <div id="modal" class="modal" onclick="closeModal(event)"><div class="modalbox" id="modalbox"></div></div>
 
@@ -451,7 +478,7 @@ var periods=[
 {start:'2026-12-02',end:'2026-12-15',label:'Dec 2',bills:[['Rent','2026-12-03',250],['Peacock','2026-12-10',6],['Netflix','2026-12-12',9],['Daycare','2026-12-14',300]],funds:{Savings:100,Christmas:75,'GLP-1':51}},
 {start:'2026-12-16',end:'2026-12-29',label:'Dec 16',bills:[['Rent','2026-12-17',250],['Spotify','2026-12-20',13],['Visible','2026-12-23',35],['Car Insurance','2026-12-24',210],['Canva','2026-12-27',15],['Daycare','2026-12-28',300],['ChatGPT','2026-12-29',20]],funds:{Savings:100,Christmas:75,'GLP-1':51}}
 ];
-var state={current:0,paychecks:{},expenses:{},paidBills:{},fundBalances:{Savings:0,Christmas:0,'GLP-1':0},customEvents:[],tasks:[],schedule:[],marinaDays:[]};
+var state={current:0,paychecks:{},expenses:{},paidBills:{},fundBalances:{Savings:0,Christmas:0,'GLP-1':0,Repayment:0},customEvents:[],tasks:[],schedule:[],marinaDays:[]};
 var calYear=2026,calMonth=9;
 function fmt(n){return Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
 function pk(i){return periods[i].start}
@@ -461,9 +488,9 @@ function load(){var raw=localStorage.getItem(KEY);if(raw){try{var d=JSON.parse(r
 var pageStack=['dashboard'];
 function showPage(id,fromBack){var current=document.querySelector('.page.active');if(current&&current.id!==id&&!fromBack)pageStack.push(current.id);document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active')});var target=document.getElementById(id);if(target)target.classList.add('active');document.querySelectorAll('.bottomnav button[data-page]').forEach(function(b){b.classList.toggle('active',b.dataset.page===id)});var back=document.getElementById('backButton');if(back)back.classList.toggle('show',id!=='dashboard');if(id==='calendarPage')renderCalendar();if(id==='tasksPage')renderTasksPage();if(id==='dashboard')renderToday();if(id==='expensesPage')render();window.scrollTo({top:0,behavior:'smooth'})}
 function goBack(){var id=pageStack.length?pageStack.pop():'dashboard';showPage(id,true)}
-function toast(msg){
+function toast(msg,duration){
  var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
- clearTimeout(window._toastTimer);window._toastTimer=setTimeout(function(){t.classList.remove('show')},1800)
+ clearTimeout(window._toastTimer);window._toastTimer=setTimeout(function(){t.classList.remove('show')},duration||1800)
 }
 function expenses(){ensure(state.current);return state.expenses[pk(state.current)]}
 function catSpent(c){return expenses().filter(function(x){return x.category===c}).reduce(function(s,x){return s+x.amount},0)}
@@ -507,7 +534,7 @@ function allEvents(){
  (state.customEvents||[]).forEach(function(e){arr=arr.concat(expandRecurring(e,rangeStart,rangeEnd))});
  (state.tasks||[]).forEach(function(t){if(t.due){var x={title:t.title,date:t.due,time:t.time,type:'school',taskId:t.id,repeat:t.repeat||'none'};arr=arr.concat(expandRecurring(x,rangeStart,rangeEnd))}});
  (state.schedule||[]).forEach(function(x){var z={title:x.title,date:x.date,time:x.start,type:x.category==='Work'?'work':(x.category==='School'?'school':(x.category==='Marina'?'coparenting':'other')),scheduleId:x.id,repeat:x.repeat||'none'};arr=arr.concat(expandRecurring(z,rangeStart,rangeEnd))});
- (state.marinaDays||[]).forEach(function(x){var z={title:'Marina with '+x.with,date:x.date,type:'coparenting',marinaWith:x.with,repeat:x.repeat||'none'};arr=arr.concat(expandRecurring(z,rangeStart,rangeEnd))});
+ (state.marinaDays||[]).forEach(function(x){var z={title:'Marina with '+x.with,date:x.date,type:'coparenting',marinaWith:x.with,marinaId:x.id,repeat:x.repeat||'none'};arr=arr.concat(expandRecurring(z,rangeStart,rangeEnd))});
  return arr
 }
 
@@ -554,12 +581,22 @@ function billPaidKey(b){return b.base?'base-'+b.period+'-'+b.index:'extra-'+b.ex
 function isBillPaid(b){return !!(state.paidBillKeys&&state.paidBillKeys[billPaidKey(b)])}
 function toggleBill2(key){if(!state.paidBillKeys)state.paidBillKeys={};state.paidBillKeys[key]=!state.paidBillKeys[key];save();render();toast(state.paidBillKeys[key]?'Bill marked paid':'Bill marked unpaid')}
 function openManageBudgets(){
- var limits=budgetLimits(),rows=Object.keys(limits).map(function(c){return '<div class="budget-edit-row"><input class="budget-name" value="'+escapeHTML(c)+'" data-old="'+escapeHTML(c)+'"><input class="budget-amount" type="number" min="0" step="1" value="'+Number(limits[c])+'"><button class="danger tiny" type="button" onclick="this.parentElement.remove()">Remove</button></div>'}).join('');
- document.getElementById('modalbox').innerHTML='<h2>Edit Spending Budgets</h2><p class="muted">Change an amount, rename a category, or add a new one.</p><div id="budgetEditRows">'+rows+'</div><div class="actions"><button class="secondary" onclick="addBudgetEditRow()">Add Category</button><button onclick="saveBudgetEdits()">Save Changes</button></div>';
+ var limits=budgetLimits(),rows=Object.keys(limits).map(function(c){return '<div class="budget-edit-row"><input class="budget-name" aria-label="Category name" value="'+escapeHTML(c)+'" data-old="'+escapeHTML(c)+'"><input class="budget-amount" aria-label="Budget limit" type="number" min="0" step="0.01" value="'+Number(limits[c])+'"><button class="danger tiny" type="button" onclick="this.parentElement.remove()">Remove</button></div>'}).join('');
+ document.getElementById('modalbox').innerHTML='<h2>Edit Spending Budgets</h2><p class="muted">Set your spending limit for each paycheck. Changes apply to all paycheck periods. You can also rename or add categories.</p><div id="budgetEditRows">'+rows+'</div><div class="actions"><button class="secondary" onclick="addBudgetEditRow()">Add Category</button><button onclick="saveBudgetEdits()">Save Changes</button><button class="secondary" onclick="closeModal()">Cancel</button></div>';
  document.getElementById('modal').classList.add('show')
 }
-function addBudgetEditRow(){var d=document.createElement('div');d.className='budget-edit-row';d.innerHTML='<input class="budget-name" placeholder="Category"><input class="budget-amount" type="number" min="0" step="1" placeholder="Amount"><button class="danger tiny" type="button" onclick="this.parentElement.remove()">Remove</button>';document.getElementById('budgetEditRows').appendChild(d)}
-function saveBudgetEdits(){var next={};document.querySelectorAll('#budgetEditRows .budget-edit-row').forEach(function(r){var n=r.querySelector('.budget-name').value.trim(),a=Number(r.querySelector('.budget-amount').value);if(n&&a>=0)next[n]=a});state.spendBudgets=next;save();document.getElementById('modal').classList.remove('show');render();toast('Budgets updated')}
+function addBudgetEditRow(){var d=document.createElement('div');d.className='budget-edit-row';d.innerHTML='<input class="budget-name" aria-label="Category name" placeholder="Category"><input class="budget-amount" aria-label="Budget limit" type="number" min="0" step="0.01" placeholder="Amount"><button class="danger tiny" type="button" onclick="this.parentElement.remove()">Remove</button>';document.getElementById('budgetEditRows').appendChild(d)}
+function saveBudgetEdits(){
+ var next=Object.create(null),rows=document.querySelectorAll('#budgetEditRows .budget-edit-row');
+ for(var i=0;i<rows.length;i++){
+  var name=rows[i].querySelector('.budget-name'),amount=rows[i].querySelector('.budget-amount'),n=name.value.trim(),raw=amount.value,a=Number(raw);
+  if(!n){alert('Enter a name for each budget category.');name.focus();return}
+  if(Object.prototype.hasOwnProperty.call(next,n)){alert('Each budget category needs a unique name.');name.focus();return}
+  if(raw===''||!Number.isFinite(a)||a<0||!amount.checkValidity()){alert('Enter a valid budget limit of $0.00 or more.');amount.focus();return}
+  next[n]=a;
+ }
+ state.spendBudgets=next;save();closeModal();render();toast('Budget limits saved',3000)
+}
 function openAddBill(id){
  var b=id?(state.extraBills||[]).find(function(x){return x.id===id}):null;
  document.getElementById('modalbox').innerHTML='<h2>'+(b?'Edit Bill':'Add Bill')+'</h2><div class="form bill-form"><input id="billName" placeholder="Bill name" value="'+escapeHTML(b?b.name:'')+'"><input id="billAmount" type="number" min="0" step=".01" placeholder="Amount" value="'+(b?b.amount:'')+'"><label><span class="muted">Due date</span><input id="billDate" type="date" value="'+(b?b.date:todayISO())+'"></label><label><span class="muted">Repeat</span><select id="billRepeat"><option value="none">One time</option><option value="weekly">Weekly</option><option value="biweekly">Every 2 weeks</option><option value="monthly">Monthly</option></select></label></div><div class="actions"><button onclick="saveExtraBill('+(b?b.id:'null')+')">'+(b?'Save Changes':'Add Bill')+'</button><button class="secondary" onclick="document.getElementById(\'modal\').classList.remove(\'show\')">Cancel</button></div>';
@@ -578,6 +615,7 @@ function render(){
  document.getElementById('tabs').innerHTML=periods.map(function(x,i){return '<button class="tab '+(i===state.current?'active':'')+'" onclick="selectPeriod('+i+')">'+x.label+'</button>'}).join('');
  document.getElementById('bills').innerHTML=currentBills.length?currentBills.map(function(b){var key=billPaidKey(b);return '<div class="bill-row"><div class="bill-main"><input type="checkbox" '+(isBillPaid(b)?'checked':'')+' onchange="toggleBill2(\''+key+'\')"><div><strong>'+escapeHTML(b.name)+'</strong><div class="muted">'+prettyDate(b.date)+(b.repeat&&b.repeat!=='none'?' · '+b.repeat:'')+'</div></div></div><div class="bill-side"><div class="money">$'+fmt(b.amount)+'</div><button class="secondary tiny" onclick="'+(b.base?'editBaseBill('+b.period+','+b.index+')':'openAddBill('+b.extraId+')')+'">Edit</button>'+(b.base?'':'<button class="danger tiny" onclick="deleteExtraBill('+b.extraId+')">Delete</button>')+'</div></div>'}).join(''):'<div class="muted">No bills in this paycheck period.</div>';
  var limits=budgetLimits();document.getElementById('budgets').innerHTML=Object.keys(limits).map(function(c){var b=limits[c],s=catSpent(c),r=b-s,pct=b?Math.min(100,s/b*100):0;return '<div class="cat"><div class="row"><strong>'+c+'</strong><span class="'+(r<0?'badtext':'good')+'">$'+fmt(Math.abs(r))+' '+(r<0?'over':'left')+'</span></div><div class="muted">$'+fmt(s)+' spent of $'+fmt(b)+'</div><div class="bar"><div class="fill '+(r<0?'bad':'')+'" style="width:'+pct+'%"></div></div></div>'}).join('');
+ document.getElementById('budgetPageBudgets').innerHTML=document.getElementById('budgets').innerHTML;
  document.getElementById('history').innerHTML=ex.length?ex.map(function(x){return '<div class="tx"><div><strong>'+(x.note||x.category)+'</strong><div class="muted">'+x.category+(x.date?' · '+x.date:'')+'</div></div><div class="money">$'+fmt(x.amount)+'</div><button class="danger tiny" onclick="removeExpense('+x.id+')">Remove</button></div>'}).join(''):'<div class="muted">No expenses for this paycheck yet.</div>';
  renderGoals();renderCalendar();
  document.getElementById('expenseDate').value=p.start;document.getElementById('eventDate').value=p.start;
@@ -589,9 +627,9 @@ function render(){
 function renderGoals(){
  var f=state.fundBalances,cur=periods[state.current].funds;
  var x=(f.Christmas||0)+(cur.Christmas||0),g=(f['GLP-1']||0)+(cur['GLP-1']||0),s=(f.Savings||0)+(cur.Savings||0);
- document.getElementById('goals').innerHTML=goalHTML('Christmas Fund',x,500,'December 25')+goalHTML('GLP-1 Fund',g,334,'November 18')+goalHTML('Emergency Savings',s,1000,'Ongoing')
+ document.getElementById('goals').innerHTML=goalHTML('Christmas Fund',x,500,'December 25')+goalHTML('GLP-1 Fund',g,334,'November 18')+goalHTML('Emergency Savings',s,1000,'Ongoing')+goalHTML('Repayment',(f.Repayment||0)+(cur.Repayment||0),null,'Ongoing')
 }
-function goalHTML(n,v,t,d){var pct=Math.min(100,v/t*100);return '<div class="goalcard"><div class="goalhead"><strong>'+n+'</strong><span>$'+fmt(v)+' / $'+fmt(t)+'</span></div><div class="bar"><div class="fill" style="width:'+pct+'%"></div></div><div class="muted">'+d+' · $'+fmt(Math.max(0,t-v))+' remaining</div></div>'}
+function goalHTML(n,v,t,d){if(t==null)return '<div class="goalcard"><div class="goalhead"><strong>'+n+'</strong><span>$'+fmt(v)+'</span></div><div class="muted">'+d+'</div></div>';var pct=Math.min(100,v/t*100);return '<div class="goalcard"><div class="goalhead"><strong>'+n+'</strong><span>$'+fmt(v)+' / $'+fmt(t)+'</span></div><div class="bar"><div class="fill" style="width:'+pct+'%"></div></div><div class="muted">'+d+' · $'+fmt(Math.max(0,t-v))+' remaining</div></div>'}
 function renderNext7(){
  var start=new Date(periods[state.current].start+'T12:00:00'),end=new Date(start);end.setDate(end.getDate()+7);
  var es=allEvents().filter(function(e){var d=new Date(e.date+'T12:00:00');return d>=start&&d<end}).sort(function(a,b){return a.date.localeCompare(b.date)});
@@ -605,9 +643,9 @@ function renderCalendar(){
  var first=new Date(calYear,calMonth,1).getDay(),days=new Date(calYear,calMonth+1,0).getDate(),es=allEvents();
  for(i=0;i<first;i++)out+='<div class="day blank"></div>';
  for(var d=1;d<=days;d++){var ds=calYear+'-'+String(calMonth+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'),de=es.filter(function(e){return e.date===ds});out+='<div class="day"><div class="daynum">'+d+'</div>'+de.map(function(e){var idx=es.indexOf(e);return '<div class="event '+e.type+'" onclick="openEvent('+idx+')">'+(e.time?formatTime(e.time)+' ':'')+e.title+(e.amount!=null?' $'+Number(e.amount).toFixed(0):'')+'</div>'}).join('')+'</div>'}
- document.getElementById('calendar').innerHTML=out;if(calendarView==='week')renderWeekView()
+ document.getElementById('calendar').innerHTML=out;renderMarinaDays();if(calendarView==='week')renderWeekView()
 }
-function openEvent(idx){var e=allEvents()[idx],html='<h2 class="form-card-title">'+e.title+'</h2><div class="muted">'+prettyDate(e.date)+(e.time?' · '+formatTime(e.time):'')+'</div>'+(e.amount!=null?'<p><strong>$'+fmt(e.amount)+'</strong></p>':'');if(e.type==='bill'&&e.period!=null){var paid=!!state.paidBills[pk(e.period)][e.billIndex];html+='<p>Status: <strong>'+(paid?'Paid':'Unpaid')+'</strong></p>'}if(e.id&&state.customEvents.some(function(x){return x.id===e.id}))html+='<div class="actions"><button onclick="editCustomEvent('+e.id+')">Edit</button><button class="danger" onclick="deleteCustomEvent('+e.id+')">Delete</button></div>';if(e.taskId)html+='<div class="actions"><button onclick="document.getElementById(\'modal\').classList.remove(\'show\');editTask('+e.taskId+')">Edit task</button><button class="danger" onclick="document.getElementById(\'modal\').classList.remove(\'show\');deleteTask('+e.taskId+')">Delete task</button></div>';html+='<div class="actions"><button class="secondary" onclick="document.getElementById(\'modal\').classList.remove(\'show\')">Close</button></div>';document.getElementById('modalbox').innerHTML=html;document.getElementById('modal').classList.add('show')}
+function openEvent(idx){var e=allEvents()[idx],html='<h2 class="form-card-title">'+e.title+'</h2><div class="muted">'+prettyDate(e.date)+(e.time?' · '+formatTime(e.time):'')+'</div>'+(e.amount!=null?'<p><strong>$'+fmt(e.amount)+'</strong></p>':'');if(e.type==='bill'&&e.period!=null){var paid=!!state.paidBills[pk(e.period)][e.billIndex];html+='<p>Status: <strong>'+(paid?'Paid':'Unpaid')+'</strong></p>'}if(e.id&&state.customEvents.some(function(x){return x.id===e.id}))html+='<div class="actions"><button onclick="editCustomEvent('+e.id+')">Edit</button><button class="danger" onclick="deleteCustomEvent('+e.id+')">Delete</button></div>';if(e.taskId)html+='<div class="actions"><button onclick="document.getElementById(\'modal\').classList.remove(\'show\');editTask('+e.taskId+')">Edit task</button><button class="danger" onclick="document.getElementById(\'modal\').classList.remove(\'show\');deleteTask('+e.taskId+')">Delete task</button></div>';if(e.marinaId!=null)html+='<div class="actions"><button onclick="editMarinaDay('+e.marinaId+')">Edit</button><button class="danger" onclick="deleteMarinaDay('+e.marinaId+')">Delete</button></div>'+(e.repeat!=='none'?'<p class="muted">Changes apply to the entire repeating schedule.</p>':'');html+='<div class="actions"><button class="secondary" onclick="document.getElementById(\'modal\').classList.remove(\'show\')">Close</button></div>';document.getElementById('modalbox').innerHTML=html;document.getElementById('modal').classList.add('show')}
 function deleteCustomEvent(id){if(!confirm('Delete this calendar item?'))return;state.customEvents=state.customEvents.filter(function(x){return x.id!==id});save();document.getElementById('modal').classList.remove('show');render();toast('Calendar item deleted')}
 function editCustomEvent(id){var e=state.customEvents.find(function(x){return x.id===id});if(!e)return;editingEventId=id;document.getElementById('modal').classList.remove('show');showPage('calendarPage');setTimeout(function(){document.getElementById('eventTitle').value=e.title||'';document.getElementById('eventAmount').value=e.amount==null?'':e.amount;document.getElementById('eventDate').value=e.date||'';document.getElementById('eventTime').value=e.time||'';document.getElementById('eventYear').value=e.year||'';document.getElementById('eventType').value=e.type||'other';document.getElementById('eventRepeat').value=e.repeat||'none';var d=document.querySelector('#calendarPage .collapsible-form');if(d)d.open=true},220)}
 function closeModal(e){if(e.target.id==='modal')e.target.classList.remove('show')}
@@ -619,14 +657,15 @@ function todayISO(){var d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).
 function prettyDate(ds){var d=new Date(ds+'T12:00:00');return d.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'})}
 var editingTaskId=null;
 function addTask(){
+ var wasEditing=editingTaskId!=null;
  var title=document.getElementById('taskTitle').value.trim(),due=document.getElementById('taskDue').value,time=document.getElementById('taskTime').value;
  if(!title){alert('Enter a task.');return}
  var subs=document.getElementById('taskSubtasks').value.split('\n').map(function(x){return x.trim()}).filter(Boolean).map(function(x,i){return {id:Date.now()+i,title:x,done:false}});
  var obj={id:editingTaskId||Date.now(),title:title,category:document.getElementById('taskCategory').value,priority:document.getElementById('taskPriority').value,due:due,time:time,repeat:document.getElementById('taskRepeat').value,subtasks:subs,done:false};if(editingTaskId){for(var q=0;q<state.tasks.length;q++)if(state.tasks[q].id===editingTaskId){obj.done=state.tasks[q].done;state.tasks[q]=obj;break}editingTaskId=null}else state.tasks.unshift(obj);
- document.getElementById('taskTitle').value='';document.getElementById('taskTime').value='';document.getElementById('taskSubtasks').value='';save();renderToday();renderTasksPage();toast('Task added')
+ document.getElementById('taskTitle').value='';document.getElementById('taskTime').value='';document.getElementById('taskSubtasks').value='';save();toast(wasEditing?'Task updated':'Task added',3000);renderTasksPage();renderToday()
 }
 function toggleTask(id){for(var i=0;i<state.tasks.length;i++)if(state.tasks[i].id===id)state.tasks[i].done=!state.tasks[i].done;save();renderToday();renderTasksPage();toast('Task updated')}
-function deleteTask(id){if(!confirm('Delete this task?'))return;state.tasks=state.tasks.filter(function(t){return t.id!==id});save();renderToday();renderTasksPage();toast('Task removed')} function editTask(id){var t=state.tasks.find(function(x){return x.id===id});if(!t)return;editingTaskId=id;showPage('tasksPage');setTimeout(function(){document.getElementById('taskTitle').value=t.title||'';document.getElementById('taskCategory').value=t.category||'Personal';document.getElementById('taskPriority').value=t.priority||'Medium';document.getElementById('taskDue').value=t.due||'';document.getElementById('taskTime').value=t.time||'';document.getElementById('taskRepeat').value=t.repeat||'none';document.getElementById('taskSubtasks').value=(t.subtasks||[]).map(function(x){return x.title}).join('\n');var d=document.querySelector('#tasksPage .collapsible-form');if(d)d.open=true},220)}
+function deleteTask(id){if(!confirm('Delete this task?'))return;state.tasks=state.tasks.filter(function(t){return t.id!==id});if(editingTaskId===id)editingTaskId=null;save();renderTasksPage();renderToday();renderCalendar();toast('Task removed')} function editTask(id){var t=state.tasks.find(function(x){return x.id===id});if(!t)return;editingTaskId=id;showPage('tasksPage');setTimeout(function(){document.getElementById('taskTitle').value=t.title||'';document.getElementById('taskCategory').value=t.category||'Personal';document.getElementById('taskPriority').value=t.priority||'Medium';document.getElementById('taskDue').value=t.due||'';document.getElementById('taskTime').value=t.time||'';document.getElementById('taskRepeat').value=t.repeat||'none';document.getElementById('taskSubtasks').value=(t.subtasks||[]).map(function(x){return x.title}).join('\n');var d=document.querySelector('#tasksPage .collapsible-form');if(d)d.open=true},220)}
 function toggleSubtask(taskId,subId){for(var i=0;i<state.tasks.length;i++)if(state.tasks[i].id===taskId){var ss=state.tasks[i].subtasks||[];for(var j=0;j<ss.length;j++)if(ss[j].id===subId)ss[j].done=!ss[j].done}save();renderToday();renderTasksPage()}
 function taskHTML(t){
  var subs=(t.subtasks||[]).map(function(s){return '<label class="subtask"><input type="checkbox" '+(s.done?'checked':'')+' onchange="toggleSubtask('+t.id+','+s.id+')"><span>'+s.title+'</span></label>'}).join('');
@@ -669,17 +708,45 @@ function renderToday(){
  if(document.getElementById('progressText'))document.getElementById('progressText').textContent=done+' of '+total+' complete';
  if(document.getElementById('progressPct'))document.getElementById('progressPct').textContent=pct+'%';
  if(document.getElementById('dailyProgress'))document.getElementById('dailyProgress').style.width=pct+'%';
- var marina=(state.marinaDays||[]).filter(function(x){return occursOn(x.date,iso,x.repeat||'none')})[0];
+ renderMarinaToday();
+ // Budget figures are updated by render(); planner refreshes do not recalculate money.
+ renderWeekStrip();renderCountdowns()
+}
+function renderMarinaToday(){
+ var marina=(state.marinaDays||[]).filter(function(x){return occursOn(x.date,todayISO(),x.repeat||'none')})[0];
  var mb=document.getElementById('marinaToday');if(mb)mb.innerHTML=marina?'<div class="marina-banner">Marina is with '+(marina.with==='Mom'?'you':'Dad')+' today</div>':'';
- renderWeekStrip();renderCountdowns();refreshTrueMoney()
 }
 function showQuickTask(){showPage('tasksPage');setTimeout(function(){var e=document.getElementById('taskTitle');if(e)e.focus()},220)}
 function showQuickSchedule(){showPage('calendarPage');setTimeout(function(){var e=document.getElementById('scheduleTitle');if(e)e.focus()},220)}
 
+var editingMarinaId=null;
+function renderMarinaDays(){
+ var list=document.getElementById('marinaDayList');if(!list)return;
+ list.innerHTML=(state.marinaDays||[]).slice().sort(function(a,b){return a.date.localeCompare(b.date)}).map(function(x){return '<div class="tx"><div><strong>Marina with '+escapeHTML(x.with)+'</strong><div class="muted">'+prettyDate(x.date)+(x.repeat&&x.repeat!=='none'?' · Repeats '+escapeHTML(Array.from(document.getElementById('marinaRepeat').options).find(function(o){return o.value===x.repeat})?.textContent||x.repeat):'')+'</div></div><div class="actions"><button class="secondary tiny" onclick="editMarinaDay('+x.id+')">Edit</button><button class="danger tiny" onclick="deleteMarinaDay('+x.id+')">Delete</button></div></div>'}).join('');
+}
+function cancelMarinaEdit(){
+ editingMarinaId=null;document.getElementById('marinaSaveButton').textContent='Add Marina Day';document.getElementById('marinaCancelButton').hidden=true;
+ document.getElementById('marinaDate').value=todayISO();document.getElementById('marinaWith').value='Mom';document.getElementById('marinaRepeat').value='none';
+}
+function editMarinaDay(id){
+ var day=state.marinaDays.find(function(x){return x.id===id});if(!day)return;
+ closeModal();showPage('calendarPage');editingMarinaId=id;
+ document.getElementById('marinaDate').value=day.date;document.getElementById('marinaWith').value=day.with;document.getElementById('marinaRepeat').value=day.repeat||'none';
+ document.getElementById('marinaSaveButton').textContent='Save Marina Day';document.getElementById('marinaCancelButton').hidden=false;
+ var form=document.getElementById('marinaDate').closest('details');form.open=true;form.scrollIntoView({block:'center'});document.getElementById('marinaDate').focus();
+}
+function refreshMarinaViews(){renderCalendar();renderMarinaToday();renderWeekStrip();if(typeof calendarMode!=='undefined'&&calendarMode!=='month')setCalendarMode(calendarMode);if(calendarView==='today')renderDayTimeline()}
+function deleteMarinaDay(id){
+ var day=state.marinaDays.find(function(x){return x.id===id});if(!day)return;
+ if(!confirm(day.repeat&&day.repeat!=='none'?'Delete this entire repeating Marina schedule?':'Delete this Marina day?'))return;
+ state.marinaDays=state.marinaDays.filter(function(x){return x.id!==id});if(editingMarinaId===id)cancelMarinaEdit();save();closeModal();refreshMarinaViews();toast('Co-parenting day deleted');
+}
 function addMarinaDay(){
  var d=document.getElementById('marinaDate').value,w=document.getElementById('marinaWith').value,r=document.getElementById('marinaRepeat').value;
  if(!d){alert('Choose a date.');return}
- state.marinaDays.push({id:Date.now(),date:d,with:w,repeat:r});save();renderToday();renderCalendar();toast('Co-parenting day added')
+ var editing=editingMarinaId!=null;
+ if(editing){var day=state.marinaDays.find(function(x){return x.id===editingMarinaId});if(!day)return;day.date=d;day.with=w;day.repeat=r}else state.marinaDays.push({id:Date.now(),date:d,with:w,repeat:r});
+ save();cancelMarinaEdit();refreshMarinaViews();toast(editing?'Co-parenting day updated':'Co-parenting day added')
 }
 function renderWeekStrip(){
  var el=document.getElementById('weekStrip');if(!el)return;
@@ -803,7 +870,7 @@ function openQuickAdd2(){
  '<button class="eh-sheetchoice" onclick="closeModal();quickMarina()">Marina Day</button></div>';
  document.getElementById('modalbox').innerHTML=html;document.getElementById('modal').classList.add('show')
 }
-function closeModal(){var m=document.getElementById('modal');if(m)m.classList.remove('show')}
+function closeModal(event){if(event&&event.target.id!=='modal')return;var m=document.getElementById('modal');if(m)m.classList.remove('show')}
 function quickExpense(){showPage('expensesPage');setTimeout(function(){var x=document.querySelector('#expensesPage input');if(x)x.focus()},250)}
 
 function openSearch(){
@@ -850,6 +917,40 @@ var oldRenderToday2=window.renderToday;
 if(typeof oldRenderToday2==='function'){
  window.renderToday=function(){oldRenderToday2();renderTodayAgenda2()}
 }
+</script>
+
+
+<script>
+// Keep page changes synchronous for quick-add and edit flows.
+(function(){
+ var reduced=window.matchMedia('(prefers-reduced-motion: reduce)');
+ var originalShowPage=window.showPage;
+ window.showPage=function(id,fromBack){
+  var current=document.querySelector('.page.active'),changed=!current||current.id!==id;
+  try{return originalShowPage(id,fromBack)}finally{
+   if(changed&&!reduced.matches){var target=document.getElementById(id);if(target)target.animate([{opacity:0,transform:'translateY(8px)'},{opacity:1,transform:'translateY(0)'}],{duration:320,easing:'cubic-bezier(.22,1,.36,1)'})}
+  }
+ };
+ document.querySelectorAll('.collapsible-form').forEach(function(details){
+  var animation=null;
+  details.querySelector('summary').addEventListener('click',function(event){
+   if(reduced.matches)return;
+   event.preventDefault();
+   var start=details.getBoundingClientRect().height,opening=animation?details.dataset.expanding!=='true':!details.open;
+   if(animation)animation.cancel();
+   details.style.height='';details.open=true;
+   var end=opening?details.getBoundingClientRect().height:details.querySelector('summary').getBoundingClientRect().height;
+   details.dataset.expanding=String(opening);details.style.overflow='hidden';
+   animation=details.animate([{height:start+'px'},{height:end+'px'}],{duration:280,easing:'cubic-bezier(.22,1,.36,1)',fill:'both'});
+   animation.onfinish=function(){details.open=opening;animation.cancel();animation=null;details.style.overflow='';delete details.dataset.expanding};
+  });
+ });
+ var originalCalendarMode=window.setCalendarMode;
+ window.setCalendarMode=function(mode){
+  originalCalendarMode(mode);
+  if(!reduced.matches){var content=document.getElementById(mode==='month'?'calendar':'calendarAltView');content.animate([{opacity:0,transform:'translateY(6px)'},{opacity:1,transform:'translateY(0)'}],{duration:240,easing:'cubic-bezier(.22,1,.36,1)'})}
+ };
+})();
 </script>
 
 </body></html>
