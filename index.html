@@ -413,7 +413,7 @@ button:focus-visible,summary:focus-visible{outline:3px solid var(--fern);outline
 <section class="card budget-section"><div class="sectionhead"><h2>Current Paycheck</h2><span class="badge" id="currentPayLabel"></span></div><div class="tabs budget-pay-tabs" id="tabs"></div><div class="budget-input-block"><div class="muted">Actual paycheck / starting balance</div><input id="paycheck" type="number" step=".01"></div></section>
 <section class="card budget-section"><div class="sectionhead"><h2>Spending Budgets</h2><button class="secondary tiny" onclick="openManageBudgets()">Edit Limits</button></div><div id="budgetPageBudgets"></div></section>
 <section class="card budget-section"><div class="sectionhead"><h2>Upcoming Bills</h2><button class="secondary tiny" onclick="openAddBill()">Add Bill</button></div><div id="bills"></div></section>
-<section class="card budget-section savings-card"><div class="sectionhead"><h2>Savings Goals</h2><button class="secondary tiny" onclick="openPayPeriodGoals()">Edit Pay Period</button></div><div id="goals"></div></section>
+<section class="card budget-section savings-card"><div class="sectionhead"><h2>Savings Goals</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="secondary tiny" onclick="openAddSavingsGoal()">Add Goal</button><button class="secondary tiny" onclick="openPayPeriodGoals()">Edit Pay Period</button></div></div><div id="goals"></div></section>
 <section class="card budget-section add-expense-card"><h2>Add Expense</h2><div class="expense-form-space form"><select id="category"><option>Groceries</option><option>Gas</option><option>Marina</option><option>Personal</option><option>Eating Out</option><option>Rent</option><option>Daycare</option><option>Car Insurance</option><option>Subscriptions</option><option>GLP-1</option><option>Christmas</option><option>Savings</option><option>Repayment</option><option>Other</option></select><input id="amount" type="number" step=".01" placeholder="Amount"><input id="expenseDate" type="date"><input id="note" class="wide" placeholder="Store, description, or note"></div><div class="actions"><button onclick="addExpense()">Add Expense</button></div></section>
 <section class="card budget-section"><div class="sectionhead"><h2>Recent Activity</h2><span class="badge">This paycheck</span></div><div id="history"></div></section>
 <section class="budget-next-wrap"><button class="nextbtn budget-next" onclick="nextPaycheck()">Start Next Paycheck</button></section>
@@ -634,16 +634,36 @@ function savingsGoalBalance(category){
  initializeSavingsGoals();var baseline=new Set(state.goalExpenseBaselineIds);
  return Object.values(state.expenses||{}).flat().reduce(function(total,e){return total+(e.category===category&&!baseline.has(e.id)?Number(e.amount||0):0)},0);
 }
-var savingsGoalNames={Christmas:'Christmas Fund','GLP-1':'GLP-1 Fund',Savings:'Emergency Savings',Repayment:'Repayment'};
-function savingsPlan(index){return Object.assign({Savings:0,Christmas:0,'GLP-1':0,Repayment:0},periods[index].funds,(state.savingsPlans||{})[pk(index)]||{})}
+function savingsGoals(){return [{category:'Christmas',name:'Christmas Fund',target:500,deadline:'December 25'},{category:'GLP-1',name:'GLP-1 Fund',target:334,deadline:'November 18'},{category:'Savings',name:'Emergency Savings',target:1000,deadline:'Ongoing'},{category:'Repayment',name:'Repayment',target:8300,deadline:'Ongoing'}].concat(state.customSavingsGoals||[])}
+function savingsGoalNames(){return Object.fromEntries(savingsGoals().map(function(goal){return [goal.category,goal.name]}))}
+function openAddSavingsGoal(){
+ document.getElementById('modalbox').innerHTML='<h2>Add Savings Goal</h2><div class="form"><label>Goal name<input id="savingsGoalName" placeholder="e.g. Vacation" maxlength="80"></label><label>Target amount<input id="savingsGoalTarget" type="number" min="0.01" step="0.01" placeholder="0.00"></label></div><div class="actions"><button onclick="saveNewSavingsGoal()">Add Goal</button><button class="secondary" onclick="closeModal()">Cancel</button></div>';
+ document.getElementById('modal').classList.add('show');
+}
+function saveNewSavingsGoal(){
+ var nameInput=document.getElementById('savingsGoalName'),targetInput=document.getElementById('savingsGoalTarget'),name=nameInput.value.trim(),target=Number(targetInput.value);
+ if(!name){alert('Enter a goal name.');nameInput.focus();return}
+ var names=savingsGoals().map(function(goal){return goal.name.toLowerCase()}).concat(Array.from(document.getElementById('category').options).map(function(option){return option.textContent.toLowerCase()}));
+ if(names.includes(name.toLowerCase())){alert('Choose a unique goal name.');nameInput.focus();return}
+ if(!Number.isFinite(target)||target<=0||!targetInput.checkValidity()){alert('Enter a target amount greater than $0.00.');targetInput.focus();return}
+ if(!state.customSavingsGoals)state.customSavingsGoals=[];
+ state.customSavingsGoals.push({category:'savings-goal-'+crypto.randomUUID(),name:name,target:target,deadline:'Ongoing'});save();closeModal();render();toast('Savings goal added',3000);
+}
+function syncSavingsExpenseCategories(){
+ var select=document.getElementById('category'),selected=select.value;
+ select.querySelectorAll('option[data-savings-goal]').forEach(function(option){option.remove()});
+ (state.customSavingsGoals||[]).forEach(function(goal){var option=document.createElement('option');option.value=goal.category;option.textContent=goal.name;option.dataset.savingsGoal='true';select.appendChild(option)});
+ if(Array.from(select.options).some(function(option){return option.value===selected}))select.value=selected;
+}
+function savingsPlan(index){return Object.assign(Object.fromEntries(savingsGoals().map(function(goal){return [goal.category,0]})),periods[index].funds,(state.savingsPlans||{})[pk(index)]||{})}
 function periodSavingsContributions(index,category){
  var baseline=new Set(state.goalExpenseBaselineIds||[]);
  return (state.expenses[pk(index)]||[]).reduce(function(total,e){return total+(e.category===category&&!baseline.has(e.id)?Number(e.amount||0):0)},0);
 }
-function savingsPlanReserve(index){initializeSavingsGoals();var plan=savingsPlan(index);return Object.keys(savingsGoalNames).reduce(function(total,category){return total+Math.max(0,plan[category]-periodSavingsContributions(index,category))},0)}
+function savingsPlanReserve(index){initializeSavingsGoals();var plan=savingsPlan(index);return Object.keys(savingsGoalNames()).reduce(function(total,category){return total+Math.max(0,plan[category]-periodSavingsContributions(index,category))},0)}
 function openPayPeriodGoals(){
  var index=state.current,plan=savingsPlan(index);
- document.getElementById('modalbox').innerHTML='<h2>Savings for '+periods[index].label+' paycheck</h2><p class="muted">Set how much to put toward each goal this pay period. These amounts are reserved in your budget. Record an expense in the matching category when you transfer the money to update progress.</p><div class="form">'+Object.keys(savingsGoalNames).map(function(category){return '<label>'+savingsGoalNames[category]+'<input class="savings-plan-amount" data-category="'+category+'" type="number" min="0" step="0.01" value="'+plan[category]+'"></label>'}).join('')+'</div><div class="actions"><button onclick="savePayPeriodGoals('+index+')">Save Changes</button><button class="secondary" onclick="closeModal()">Cancel</button></div>';
+ document.getElementById('modalbox').innerHTML='<h2>Savings for '+periods[index].label+' paycheck</h2><p class="muted">Set how much to put toward each goal this pay period. These amounts are reserved in your budget. Record an expense in the matching category when you transfer the money to update progress.</p><div class="form">'+Object.keys(savingsGoalNames()).map(function(category){return '<label>'+escapeHTML(savingsGoalNames()[category])+'<input class="savings-plan-amount" data-category="'+escapeHTML(category)+'" type="number" min="0" step="0.01" value="'+plan[category]+'"></label>'}).join('')+'</div><div class="actions"><button onclick="savePayPeriodGoals('+index+')">Save Changes</button><button class="secondary" onclick="closeModal()">Cancel</button></div>';
  document.getElementById('modal').classList.add('show');
 }
 function savePayPeriodGoals(index){
@@ -652,12 +672,11 @@ function savePayPeriodGoals(index){
  if(!state.savingsPlans)state.savingsPlans={};state.savingsPlans[pk(index)]=plan;save();closeModal();render();toast('Pay period savings updated',3000);
 }
 function renderGoals(){
- initializeSavingsGoals();
- document.getElementById('goals').innerHTML=goalHTML('Christmas Fund',savingsGoalBalance('Christmas'),500,'December 25')+goalHTML('GLP-1 Fund',savingsGoalBalance('GLP-1'),334,'November 18')+goalHTML('Emergency Savings',savingsGoalBalance('Savings'),1000,'Ongoing')+goalHTML('Repayment',savingsGoalBalance('Repayment'),8300,'Ongoing');
- var plan=savingsPlan(state.current);document.querySelectorAll('#expensesPage #goals .goalcard').forEach(function(card,index){var category=Object.keys(savingsGoalNames)[index];card.insertAdjacentHTML('beforeend','<div class="muted" style="margin-top:6px">This paycheck: $'+fmt(periodSavingsContributions(state.current,category))+' contributed / $'+fmt(plan[category])+' planned</div>')})
+ initializeSavingsGoals();syncSavingsExpenseCategories();var plan=savingsPlan(state.current);
+ document.getElementById('goals').innerHTML=savingsGoals().map(function(goal){return goalHTML(goal.name,savingsGoalBalance(goal.category),goal.target,goal.deadline)+'<div class="muted" style="margin-top:-10px;margin-bottom:16px">This paycheck: $'+fmt(periodSavingsContributions(state.current,goal.category))+' contributed / $'+fmt(plan[goal.category])+' planned</div>'}).join('');
 }
 
-function goalHTML(n,v,t,d){if(t==null)return '<div class="goalcard"><div class="goalhead"><strong>'+n+'</strong><span>$'+fmt(v)+'</span></div><div class="muted">'+d+'</div></div>';var pct=Math.min(100,v/t*100);return '<div class="goalcard"><div class="goalhead"><strong>'+n+'</strong><span>$'+fmt(v)+' / $'+fmt(t)+'</span></div><div class="bar"><div class="fill" style="width:'+pct+'%"></div></div><div class="muted">'+d+' · $'+fmt(Math.max(0,t-v))+' remaining</div></div>'}
+function goalHTML(n,v,t,d){n=escapeHTML(n);d=escapeHTML(d);if(t==null)return '<div class="goalcard"><div class="goalhead"><strong>'+n+'</strong><span>$'+fmt(v)+'</span></div><div class="muted">'+d+'</div></div>';var pct=Math.min(100,v/t*100);return '<div class="goalcard"><div class="goalhead"><strong>'+n+'</strong><span>$'+fmt(v)+' / $'+fmt(t)+'</span></div><div class="bar"><div class="fill" style="width:'+pct+'%"></div></div><div class="muted">'+d+' · $'+fmt(Math.max(0,t-v))+' remaining</div></div>'}
 function renderNext7(){
  var start=new Date(periods[state.current].start+'T12:00:00'),end=new Date(start);end.setDate(end.getDate()+7);
  var es=allEvents().filter(function(e){var d=new Date(e.date+'T12:00:00');return d>=start&&d<end}).sort(function(a,b){return a.date.localeCompare(b.date)});
