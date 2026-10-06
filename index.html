@@ -627,7 +627,7 @@ function render(){
 function renderGoals(){
  var f=state.fundBalances,cur=periods[state.current].funds;
  var x=(f.Christmas||0)+(cur.Christmas||0),g=(f['GLP-1']||0)+(cur['GLP-1']||0),s=(f.Savings||0)+(cur.Savings||0);
- document.getElementById('goals').innerHTML=goalHTML('Christmas Fund',x,500,'December 25')+goalHTML('GLP-1 Fund',g,334,'November 18')+goalHTML('Emergency Savings',s,1000,'Ongoing')+goalHTML('Repayment',(f.Repayment||0)+(cur.Repayment||0),null,'Ongoing')
+ document.getElementById('goals').innerHTML=goalHTML('Christmas Fund',x,500,'December 25')+goalHTML('GLP-1 Fund',g,334,'November 18')+goalHTML('Emergency Savings',s,1000,'Ongoing')+goalHTML('Repayment',(f.Repayment||0)+(cur.Repayment||0),8300,'Ongoing')
 }
 function goalHTML(n,v,t,d){if(t==null)return '<div class="goalcard"><div class="goalhead"><strong>'+n+'</strong><span>$'+fmt(v)+'</span></div><div class="muted">'+d+'</div></div>';var pct=Math.min(100,v/t*100);return '<div class="goalcard"><div class="goalhead"><strong>'+n+'</strong><span>$'+fmt(v)+' / $'+fmt(t)+'</span></div><div class="bar"><div class="fill" style="width:'+pct+'%"></div></div><div class="muted">'+d+' · $'+fmt(Math.max(0,t-v))+' remaining</div></div>'}
 function renderNext7(){
