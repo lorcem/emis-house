@@ -546,10 +546,9 @@ function paidBillsTotal(periodIndex){
  return total
 }
 function variableBudgetRemaining(){
- var limits={Groceries:180,Gas:80,Marina:40,Personal:40,'Eating Out':40},spent={Groceries:0,Gas:0,Marina:0,Personal:0,'Eating Out':0};
- (state.expenses||[]).forEach(function(e){if(spent[e.category]!=null)spent[e.category]+=Number(e.amount||0)});
- var total=0;Object.keys(limits).forEach(function(k){total+=Math.max(0,limits[k]-spent[k])});return total
+ var limits=budgetLimits();return Object.keys(limits).reduce(function(total,category){return total+Math.max(0,Number(limits[category]||0)-catSpent(category))},0);
 }
+
 function trueBankBalance(){
  var income=Number(state.paychecks[pk(state.current)]||1450);
  var manual=(state.expenses||[]).reduce(function(a,e){return a+Number(e.amount||0)},0);
@@ -563,7 +562,7 @@ function trueReserved(){
  return unpaid+funds+variableBudgetRemaining()
 }
 function trueSafeToSpend(){return Math.max(0,trueBankBalance()-trueReserved())}
-function budgetLimits(){return state.spendBudgets||spendBudgets}
+function budgetLimits(){return (state.periodSpendingLimits||{})[pk(state.current)]||state.spendBudgets||spendBudgets}
 function baseBill(periodIndex,billIndex){
  var b=periods[periodIndex].bills[billIndex],key=periodIndex+'-'+billIndex,o=(state.billOverrides||{})[key]||{};
  return {id:'base-'+key,name:o.name||b[0],date:o.date||b[1],amount:o.amount!=null?Number(o.amount):Number(b[2]),base:true,period:periodIndex,index:billIndex}
@@ -583,7 +582,7 @@ function isBillPaid(b){return !!(state.paidBillKeys&&state.paidBillKeys[billPaid
 function toggleBill2(key){if(!state.paidBillKeys)state.paidBillKeys={};state.paidBillKeys[key]=!state.paidBillKeys[key];save();render();toast(state.paidBillKeys[key]?'Bill marked paid':'Bill marked unpaid')}
 function openManageBudgets(){
  var limits=budgetLimits(),rows=Object.keys(limits).map(function(c){return '<div class="budget-edit-row"><input class="budget-name" aria-label="Category name" value="'+escapeHTML(c)+'" data-old="'+escapeHTML(c)+'"><input class="budget-amount" aria-label="Budget limit" type="number" min="0" step="0.01" value="'+Number(limits[c])+'"><button class="danger tiny" type="button" onclick="this.parentElement.remove()">Remove</button></div>'}).join('');
- document.getElementById('modalbox').innerHTML='<h2>Edit Spending Budgets</h2><p class="muted">Set your spending limit for each paycheck. Changes apply to all paycheck periods. You can also rename or add categories.</p><div id="budgetEditRows">'+rows+'</div><div class="actions"><button class="secondary" onclick="addBudgetEditRow()">Add Category</button><button onclick="saveBudgetEdits()">Save Changes</button><button class="secondary" onclick="closeModal()">Cancel</button></div>';
+ document.getElementById('modalbox').innerHTML='<h2>Edit Spending Budgets</h2><p class="muted">Set your spending limit for each paycheck. Changes apply to the selected paycheck period. You can also rename or add categories.</p><div id="budgetEditRows">'+rows+'</div><div class="actions"><button class="secondary" onclick="addBudgetEditRow()">Add Category</button><button onclick="saveBudgetEdits()">Save Changes</button><button class="secondary" onclick="closeModal()">Cancel</button></div>';
  document.getElementById('modal').classList.add('show')
 }
 function addBudgetEditRow(){var d=document.createElement('div');d.className='budget-edit-row';d.innerHTML='<input class="budget-name" aria-label="Category name" placeholder="Category"><input class="budget-amount" aria-label="Budget limit" type="number" min="0" step="0.01" placeholder="Amount"><button class="danger tiny" type="button" onclick="this.parentElement.remove()">Remove</button>';document.getElementById('budgetEditRows').appendChild(d)}
@@ -596,7 +595,7 @@ function saveBudgetEdits(){
   if(raw===''||!Number.isFinite(a)||a<0||!amount.checkValidity()){alert('Enter a valid budget limit of $0.00 or more.');amount.focus();return}
   next[n]=a;
  }
- state.spendBudgets=next;save();closeModal();render();toast('Budget limits saved',3000)
+ if(!state.periodSpendingLimits)state.periodSpendingLimits={};state.periodSpendingLimits[pk(state.current)]=next;save();closeModal();render();toast('Budget limits saved',3000)
 }
 function openAddBill(id){
  var b=id?(state.extraBills||[]).find(function(x){return x.id===id}):null;
@@ -607,11 +606,19 @@ function saveExtraBill(id){var name=document.getElementById('billName').value.tr
 function deleteExtraBill(id){if(!confirm('Delete this bill and its future repeats?'))return;state.extraBills=state.extraBills.filter(function(x){return x.id!==id});save();render();toast('Bill deleted')}
 function editBaseBill(periodIndex,billIndex){var b=baseBill(periodIndex,billIndex);document.getElementById('modalbox').innerHTML='<h2>Edit Bill</h2><div class="form bill-form"><input id="baseBillName" value="'+escapeHTML(b.name)+'"><input id="baseBillAmount" type="number" min="0" step=".01" value="'+b.amount+'"><label><span class="muted">Due date</span><input id="baseBillDate" type="date" value="'+b.date+'"></label></div><div class="actions"><button onclick="saveBaseBill('+periodIndex+','+billIndex+')">Save Changes</button><button class="secondary" onclick="document.getElementById(\'modal\').classList.remove(\'show\')">Cancel</button></div>';document.getElementById('modal').classList.add('show')}
 function saveBaseBill(pi,bi){var name=document.getElementById('baseBillName').value.trim(),amount=Number(document.getElementById('baseBillAmount').value),date=document.getElementById('baseBillDate').value;if(!name||!date||amount<0)return;if(!state.billOverrides)state.billOverrides={};state.billOverrides[pi+'-'+bi]={name:name,amount:amount,date:date};save();document.getElementById('modal').classList.remove('show');render();toast('Bill updated')}
+function applyOct7Budget(){
+ if(state.oct7BudgetApplied)return;
+ var key='2026-10-07';state.paychecks[key]=1450;
+ if(!state.periodSpendingLimits)state.periodSpendingLimits={};state.periodSpendingLimits[key]={Groceries:180,Gas:80,Marina:40,Personal:40,'Eating Out':40};
+ if(!state.savingsPlans)state.savingsPlans={};state.savingsPlans[key]={Savings:100,'GLP-1':84,Christmas:125,'Car Savings':25,'Marina Savings':25,Repayment:25};
+ state.oct7BudgetApplied=true;save();
+}
 function render(){
+ applyOct7Budget();
  ensure(state.current);var p=periods[state.current],k=pk(state.current),ex=expenses(),pay=Number(state.paychecks[k]||0),spent=ex.reduce(function(s,x){return s+x.amount},0),unpaid=0;
  var currentBills=billsForPeriod(state.current);for(var i=0;i<currentBills.length;i++)if(!isBillPaid(currentBills[i]))unpaid+=currentBills[i].amount;
- var fundReserve=savingsPlanReserve(state.current),bank=pay-spent,res=unpaid+fundReserve,safe=bank-res;
- document.getElementById('bank').textContent=fmt(bank);document.getElementById('reserved').textContent=fmt(res);document.getElementById('safe').textContent=fmt(safe);document.getElementById('safe').className=safe<0?'badtext':'';
+ var fundReserve=savingsPlanReserve(state.current),bank=pay-spent,res=unpaid+fundReserve+variableBudgetRemaining(),safe=bank-res;
+ document.getElementById('safeHero').textContent=fmt(safe);document.getElementById('bank').textContent=fmt(bank);document.getElementById('reserved').textContent=fmt(res);document.getElementById('safe').textContent=fmt(safe);document.getElementById('safe').className=safe<0?'badtext':'';
  var pi=document.getElementById('paycheck');pi.value=pay;pi.onchange=function(){state.paychecks[k]=Number(this.value||0);save();render()};
  document.getElementById('tabs').innerHTML=periods.map(function(x,i){return '<button class="tab '+(i===state.current?'active':'')+'" onclick="selectPeriod('+i+')">'+x.label+'</button>'}).join('');
  document.getElementById('bills').innerHTML=currentBills.length?currentBills.map(function(b){var key=billPaidKey(b);return '<div class="bill-row"><div class="bill-main"><input type="checkbox" '+(isBillPaid(b)?'checked':'')+' onchange="toggleBill2(\''+key+'\')"><div><strong>'+escapeHTML(b.name)+'</strong><div class="muted">'+prettyDate(b.date)+(b.repeat&&b.repeat!=='none'?' · '+b.repeat:'')+'</div></div></div><div class="bill-side"><div class="money">$'+fmt(b.amount)+'</div><button class="secondary tiny" onclick="'+(b.base?'editBaseBill('+b.period+','+b.index+')':'openAddBill('+b.extraId+')')+'">Edit</button>'+(b.base?'':'<button class="danger tiny" onclick="deleteExtraBill('+b.extraId+')">Delete</button>')+'</div></div>'}).join(''):'<div class="muted">No bills in this paycheck period.</div>';
@@ -635,7 +642,7 @@ function savingsGoalBalance(category){
  initializeSavingsGoals();var baseline=new Set(state.goalExpenseBaselineIds);
  return Object.values(state.expenses||{}).flat().reduce(function(total,e){return total+(e.category===category&&!baseline.has(e.id)?Number(e.amount||0):0)},0);
 }
-function savingsGoals(){return [{category:'Christmas',name:'Christmas Fund',target:500,deadline:'December 25'},{category:'GLP-1',name:'GLP-1 Fund',target:334,deadline:'November 18'},{category:'Savings',name:'Emergency Savings',target:1000,deadline:'Ongoing'},{category:'Repayment',name:'Repayment',target:8300,deadline:'Ongoing'}].concat(state.customSavingsGoals||[])}
+function savingsGoals(){return [{category:'Christmas',name:'Christmas Fund',target:500,deadline:'December 25'},{category:'GLP-1',name:'GLP-1 Fund',target:334,deadline:'November 18'},{category:'Savings',name:'Emergency Savings',target:1000,deadline:'Ongoing'},{category:'Repayment',name:'Repayment',target:8300,deadline:'Ongoing'},{category:'Car Savings',name:'Car Savings',target:null,deadline:'Ongoing'},{category:'Marina Savings',name:'Marina Savings',target:null,deadline:'Ongoing'}].concat(state.customSavingsGoals||[])}
 function savingsGoalNames(){return Object.fromEntries(savingsGoals().map(function(goal){return [goal.category,goal.name]}))}
 function openAddSavingsGoal(){
  document.getElementById('modalbox').innerHTML='<h2>Add Savings Goal</h2><div class="form"><label>Goal name<input id="savingsGoalName" placeholder="e.g. Vacation" maxlength="80"></label><label>Target amount<input id="savingsGoalTarget" type="number" min="0.01" step="0.01" placeholder="0.00"></label></div><div class="actions"><button onclick="saveNewSavingsGoal()">Add Goal</button><button class="secondary" onclick="closeModal()">Cancel</button></div>';
@@ -653,7 +660,7 @@ function saveNewSavingsGoal(){
 function syncSavingsExpenseCategories(){
  var select=document.getElementById('category'),selected=select.value;
  select.querySelectorAll('option[data-savings-goal]').forEach(function(option){option.remove()});
- (state.customSavingsGoals||[]).forEach(function(goal){var option=document.createElement('option');option.value=goal.category;option.textContent=goal.name;option.dataset.savingsGoal='true';select.appendChild(option)});
+ savingsGoals().filter(function(goal){return !Array.from(select.options).some(function(option){return option.value===goal.category})}).forEach(function(goal){var option=document.createElement('option');option.value=goal.category;option.textContent=goal.name;option.dataset.savingsGoal='true';select.appendChild(option)});
  if(Array.from(select.options).some(function(option){return option.value===selected}))select.value=selected;
 }
 function savingsPlan(index){return Object.assign(Object.fromEntries(savingsGoals().map(function(goal){return [goal.category,0]})),periods[index].funds,(state.savingsPlans||{})[pk(index)]||{})}
