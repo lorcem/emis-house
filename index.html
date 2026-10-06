@@ -372,7 +372,7 @@ button:focus-visible,summary:focus-visible{outline:3px solid var(--fern);outline
 <section class="card stripe-accent"><div class="sectionhead"><h2>Countdowns</h2><span class="badge">Coming up</span></div><div id="countdowns" class="countdown-grid"></div></section></main>
 
 <main id="calendarPage" class="page">
-<section class="card"><div class="sectionhead"><h2>Calendar</h2></div><div class="eh-segment"><button id="calModeMonthBtn" class="active" onclick="setCalendarMode('month')">Month</button><button id="calModeWeekBtn" onclick="setCalendarMode('week')">Week</button><button id="calModeAgendaBtn" onclick="setCalendarMode('agenda')">Agenda</button></div><div id="calendarAltView"></div></section><section class="card">
+<section class="card"><div class="sectionhead"><h2>Calendar</h2><button class="secondary tiny" onclick="openCalendarColors()">Colors</button></div><div id="calendarColorKey" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px"></div><div class="eh-segment"><button id="calModeMonthBtn" class="active" onclick="setCalendarMode('month')">Month</button><button id="calModeWeekBtn" onclick="setCalendarMode('week')">Week</button><button id="calModeAgendaBtn" onclick="setCalendarMode('agenda')">Agenda</button></div><div id="calendarAltView"></div></section><section class="card">
 <div class="sectionhead calendar-view-controls"><div class="tabs"><button class="tab active" id="calMonthBtn" onclick="setCalendarView('month')">Month</button><button class="tab" id="calWeekBtn" onclick="setCalendarView('week')">Week</button><button class="tab" id="calTodayBtn" onclick="goCalendarToday()">Today</button></div></div>
 <div id="monthView"><div class="calendar-head"><button class="secondary" onclick="changeMonth(-1)">Previous</button><h2 id="monthTitle" style="margin:0"></h2><button class="secondary" onclick="changeMonth(1)">Next</button></div><div class="calendar" id="calendar"></div></div>
 <div id="todayView" style="display:none"></div><div id="weekView" style="display:none"><div class="calendar-head"><button class="secondary" onclick="changeWeek(-1)">Previous</button><h2 id="weekTitle" style="margin:0"></h2><button class="secondary" onclick="changeWeek(1)">Next</button></div><div id="weekAgenda"></div></div>
@@ -381,6 +381,7 @@ button:focus-visible,summary:focus-visible{outline:3px solid var(--fern);outline
 <input id="eventTitle" placeholder="Title"><input id="eventAmount" type="number" step=".01" placeholder="Amount (optional)">
 <label><span class="muted">Date</span><input id="eventDate" type="date"></label><label><span class="muted">Time (optional)</span><input id="eventTime" type="time" step="900"></label><label><span class="muted">Year (optional)</span><input id="eventYear" type="number" min="1900" max="2100" placeholder="e.g. 1999"></label><select id="eventType">
 <option value="other">Personal / Other</option>
+<option value="appointment">Appointment</option>
 <option value="school">Homework / School</option>
 <option value="coparenting">Co-parenting / Marina</option>
 <option value="work">Work</option>
@@ -533,7 +534,7 @@ function allEvents(){
  var rangeStart=(calYear-1)+'-01-01',rangeEnd=(calYear+1)+'-12-31';
  (state.customEvents||[]).forEach(function(e){arr=arr.concat(expandRecurring(e,rangeStart,rangeEnd))});
  (state.tasks||[]).forEach(function(t){if(t.due){var x={title:t.title,date:t.due,time:t.time,type:'school',taskId:t.id,repeat:t.repeat||'none'};arr=arr.concat(expandRecurring(x,rangeStart,rangeEnd))}});
- (state.schedule||[]).forEach(function(x){var z={title:x.title,date:x.date,time:x.start,type:x.category==='Work'?'work':(x.category==='School'?'school':(x.category==='Marina'?'coparenting':'other')),scheduleId:x.id,repeat:x.repeat||'none'};arr=arr.concat(expandRecurring(z,rangeStart,rangeEnd))});
+ (state.schedule||[]).forEach(function(x){var z={title:x.title,date:x.date,time:x.start,type:x.category==='Work'?'work':(x.category==='School'?'school':(x.category==='Marina'?'coparenting':(x.category==='Appointment'?'appointment':'other'))),scheduleId:x.id,repeat:x.repeat||'none'};arr=arr.concat(expandRecurring(z,rangeStart,rangeEnd))});
  (state.marinaDays||[]).forEach(function(x){var z={title:'Marina with '+x.with,date:x.date,type:'coparenting',marinaWith:x.with,marinaId:x.id,repeat:x.repeat||'none'};arr=arr.concat(expandRecurring(z,rangeStart,rangeEnd))});
  return arr
 }
@@ -683,7 +684,26 @@ function renderNext7(){
  document.getElementById('next7').innerHTML=es.length?es.map(function(e){return '<div class="upcoming-item"><div class="datechip">'+e.date+'</div><strong>'+e.title+'</strong>'+(e.amount!=null?' <span class="money">$'+fmt(e.amount)+'</span>':'')+'</div>'}).join(''):'<div class="muted">Nothing scheduled in the next 7 days.</div>'
 }
 function changeMonth(n){calMonth+=n;if(calMonth<0){calMonth=11;calYear--}if(calMonth>11){calMonth=0;calYear++}renderCalendar()}
+function calendarColorTypes(){return [{type:'bill',name:'Bills',color:'#FECDBE'},{type:'birthday',name:'Birthdays',color:'#E79897'},{type:'appointment',name:'Appointments',color:'#B7CBDB'},{type:'anniversary',name:'Anniversaries',color:'#C6C09C'},{type:'holiday',name:'Holidays',color:'#FCC88A'},{type:'work',name:'Work',color:'#768E78'},{type:'school',name:'School / Tasks',color:'#FCC88A'},{type:'coparenting',name:'Co-parenting / Marina',color:'#FECDBE'},{type:'pay',name:'Paydays',color:'#C6C09C'},{type:'goal',name:'Goals / Deadlines',color:'#B7CBDB'},{type:'other',name:'Personal / Other',color:'#EBDEC0'}]}
+function calendarTypeColor(item){var color=(state.calendarColors||{})[item.type];return /^#[0-9a-f]{6}$/i.test(color||'')?color:item.color}
+function calendarColorText(color){
+ var channels=[1,3,5].map(function(i){var value=parseInt(color.slice(i,i+2),16)/255;return value<=.04045?value/12.92:Math.pow((value+.055)/1.055,2.4)});
+ var luminance=.2126*channels[0]+.7152*channels[1]+.0722*channels[2];return luminance>.179?'#000000':'#FFFFFF';
+}
+function applyCalendarColors(){
+ var style=document.getElementById('calendarColorStyles');if(!style){style=document.createElement('style');style.id='calendarColorStyles';document.head.appendChild(style)}
+ style.textContent=calendarColorTypes().map(function(item){var color=calendarTypeColor(item),selector=['.event','.week-time-event','.timeline-event','.week-preview-item'].map(function(cls){return cls+'.'+item.type}).join(',');return selector+'{background:'+color+'!important;color:'+calendarColorText(color)+'!important;border-left-color:'+color+'!important}'+'.eh-listrow.calendar-type-'+item.type+' .eh-dot{background:'+color+'!important}'+selector.split(',').map(function(cls){return cls+' small'}).join(',')+'{color:inherit!important}'}).join('');
+ document.getElementById('calendarColorKey').innerHTML=calendarColorTypes().map(function(item){return '<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px"><span style="width:12px;height:12px;border-radius:50%;border:1px solid rgba(0,0,0,.15);background:'+calendarTypeColor(item)+'"></span>'+item.name+'</span>'}).join('');
+}
+function openCalendarColors(){
+ document.getElementById('modalbox').innerHTML='<h2>Calendar Colors</h2><p class="muted">Choose a color for each event type. Existing and new events use the same colors.</p><div class="form">'+calendarColorTypes().map(function(item){return '<label>'+item.name+'<input type="color" class="calendar-color-input" data-type="'+item.type+'" value="'+calendarTypeColor(item)+'" style="height:48px"></label>'}).join('')+'</div><div class="actions"><button onclick="saveCalendarColors()">Save Colors</button><button class="secondary" onclick="closeModal()">Cancel</button></div>';
+ document.getElementById('modal').classList.add('show');
+}
+function saveCalendarColors(){
+ var colors={};document.querySelectorAll('.calendar-color-input').forEach(function(input){colors[input.dataset.type]=input.value});state.calendarColors=colors;save();applyCalendarColors();closeModal();toast('Calendar colors saved',3000);
+}
 function renderCalendar(){
+ applyCalendarColors();
  var names=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],short=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],months=['January','February','March','April','May','June','July','August','September','October','November','December'];
  document.getElementById('monthTitle').textContent=months[calMonth]+' '+calYear;
  var out='';for(var i=0;i<7;i++)out+='<div class="dow">'+short[i]+'</div>';
@@ -947,7 +967,7 @@ function setCalendarMode(mode){
  if(mode==='week'){var now=new Date(today+'T12:00:00'),sun=new Date(now);sun.setDate(now.getDate()-now.getDay()),end=new Date(sun);end.setDate(sun.getDate()+6);events=events.filter(function(e){var d=new Date(e.date+'T12:00:00');return d>=sun&&d<=end})}
  else events=events.filter(function(e){return e.date>=today}).slice(0,40);
  var last='',html='';
- events.forEach(function(e){if(e.date!==last){last=e.date;html+='<div class="eh-agenda-day">'+prettyDate(e.date)+'</div>'}html+='<div class="eh-listrow"><div class="eh-time">'+(e.time?formatTime(e.time):'All day')+'</div><div><div class="eh-title">'+esc2(e.title)+'</div><div class="eh-meta">'+esc2(e.type||'Event')+'</div></div><span class="eh-dot"></span></div>'});
+ events.forEach(function(e){if(e.date!==last){last=e.date;html+='<div class="eh-agenda-day">'+prettyDate(e.date)+'</div>'}html+='<div class="eh-listrow calendar-type-'+(calendarColorTypes().some(function(item){return item.type===e.type})?e.type:'other')+'"><div class="eh-time">'+(e.time?formatTime(e.time):'All day')+'</div><div><div class="eh-title">'+esc2(e.title)+'</div><div class="eh-meta">'+esc2(e.type||'Event')+'</div></div><span class="eh-dot"></span></div>'});
  alt.innerHTML=html||'<div class="eh-empty">Nothing scheduled here yet.</div>'
 }
 
