@@ -414,7 +414,7 @@ button:focus-visible,summary:focus-visible{outline:3px solid var(--fern);outline
 <section class="card budget-section"><div class="sectionhead"><h2>Spending Budgets</h2><button class="secondary tiny" onclick="openManageBudgets()">Edit Limits</button></div><div id="budgetPageBudgets"></div></section>
 <section class="card budget-section"><div class="sectionhead"><h2>Upcoming Bills</h2><button class="secondary tiny" onclick="openAddBill()">Add Bill</button></div><div id="bills"></div></section>
 <section class="card budget-section savings-card"><div class="sectionhead"><h2>Savings Goals</h2><span class="badge">Progress</span></div><div id="goals"></div></section>
-<section class="card budget-section add-expense-card"><h2>Add Expense</h2><div class="expense-form-space form"><select id="category"><option>Groceries</option><option>Gas</option><option>Marina</option><option>Personal</option><option>Eating Out</option><option>Rent</option><option>Daycare</option><option>Car Insurance</option><option>Subscriptions</option><option>GLP-1</option><option>Christmas</option><option>Savings</option><option>Other</option></select><input id="amount" type="number" step=".01" placeholder="Amount"><input id="expenseDate" type="date"><input id="note" class="wide" placeholder="Store, description, or note"></div><div class="actions"><button onclick="addExpense()">Add Expense</button></div></section>
+<section class="card budget-section add-expense-card"><h2>Add Expense</h2><div class="expense-form-space form"><select id="category"><option>Groceries</option><option>Gas</option><option>Marina</option><option>Personal</option><option>Eating Out</option><option>Rent</option><option>Daycare</option><option>Car Insurance</option><option>Subscriptions</option><option>GLP-1</option><option>Christmas</option><option>Savings</option><option>Repayment</option><option>Other</option></select><input id="amount" type="number" step=".01" placeholder="Amount"><input id="expenseDate" type="date"><input id="note" class="wide" placeholder="Store, description, or note"></div><div class="actions"><button onclick="addExpense()">Add Expense</button></div></section>
 <section class="card budget-section"><div class="sectionhead"><h2>Recent Activity</h2><span class="badge">This paycheck</span></div><div id="history"></div></section>
 <section class="budget-next-wrap"><button class="nextbtn budget-next" onclick="nextPaycheck()">Start Next Paycheck</button></section>
 </main>
@@ -498,7 +498,7 @@ function addExpense(){var a=Number(document.getElementById('amount').value),c=do
 function removeExpense(id){state.expenses[pk(state.current)]=expenses().filter(function(x){return x.id!==id});save();render()}
 function toggleBill(i){state.paidBills[pk(state.current)][i]=!state.paidBills[pk(state.current)][i];save();render();refreshTrueMoney();render();toast(state.paidBills[pk(state.current)][i]?'Bill marked paid':'Bill marked unpaid')}
 function selectPeriod(i){state.current=i;ensure(i);var dt=periods[i].start.split('-');calYear=Number(dt[0]);calMonth=Number(dt[1])-1;save();render()}
-function nextPaycheck(){if(state.current>=periods.length-1){alert('The preloaded schedule currently ends on December 16.');return}var f=periods[state.current].funds;for(var n in f)state.fundBalances[n]=(state.fundBalances[n]||0)+f[n];state.current++;ensure(state.current);save();render();window.scrollTo(0,0)}
+function nextPaycheck(){if(state.current>=periods.length-1){alert('The preloaded schedule currently ends on December 16.');return}state.current++;ensure(state.current);save();render();window.scrollTo(0,0)}
 
 var calendarView='month',weekAnchor=new Date();
 
@@ -624,11 +624,21 @@ function render(){
  var sd=document.getElementById('scheduleDate');if(sd&&!sd.value)sd.value=todayISO();
  var td=document.getElementById('taskDue');if(td&&!td.value)td.value=todayISO();var md=document.getElementById('marinaDate');if(md&&!md.value)md.value=todayISO()
 }
-function renderGoals(){
- var f=state.fundBalances,cur=periods[state.current].funds;
- var x=(f.Christmas||0)+(cur.Christmas||0),g=(f['GLP-1']||0)+(cur['GLP-1']||0),s=(f.Savings||0)+(cur.Savings||0);
- document.getElementById('goals').innerHTML=goalHTML('Christmas Fund',x,500,'December 25')+goalHTML('GLP-1 Fund',g,334,'November 18')+goalHTML('Emergency Savings',s,1000,'Ongoing')+goalHTML('Repayment',(f.Repayment||0)+(cur.Repayment||0),8300,'Ongoing')
+function initializeSavingsGoals(){
+ if(Array.isArray(state.goalExpenseBaselineIds))return;
+ // Start existing goals at zero without removing historical expense records.
+ state.goalExpenseBaselineIds=Object.values(state.expenses||{}).flat().map(function(e){return e.id});
+ state.fundBalances={Savings:0,Christmas:0,'GLP-1':0,Repayment:0};save();
 }
+function savingsGoalBalance(category){
+ initializeSavingsGoals();var baseline=new Set(state.goalExpenseBaselineIds);
+ return Object.values(state.expenses||{}).flat().reduce(function(total,e){return total+(e.category===category&&!baseline.has(e.id)?Number(e.amount||0):0)},0);
+}
+function renderGoals(){
+ initializeSavingsGoals();
+ document.getElementById('goals').innerHTML=goalHTML('Christmas Fund',savingsGoalBalance('Christmas'),500,'December 25')+goalHTML('GLP-1 Fund',savingsGoalBalance('GLP-1'),334,'November 18')+goalHTML('Emergency Savings',savingsGoalBalance('Savings'),1000,'Ongoing')+goalHTML('Repayment',savingsGoalBalance('Repayment'),8300,'Ongoing')
+}
+
 function goalHTML(n,v,t,d){if(t==null)return '<div class="goalcard"><div class="goalhead"><strong>'+n+'</strong><span>$'+fmt(v)+'</span></div><div class="muted">'+d+'</div></div>';var pct=Math.min(100,v/t*100);return '<div class="goalcard"><div class="goalhead"><strong>'+n+'</strong><span>$'+fmt(v)+' / $'+fmt(t)+'</span></div><div class="bar"><div class="fill" style="width:'+pct+'%"></div></div><div class="muted">'+d+' · $'+fmt(Math.max(0,t-v))+' remaining</div></div>'}
 function renderNext7(){
  var start=new Date(periods[state.current].start+'T12:00:00'),end=new Date(start);end.setDate(end.getDate()+7);
@@ -679,7 +689,7 @@ function renderTasksPage(){
   return !t.done&&t.category===filter
  }).sort(function(a,b){return (a.due||'9999').localeCompare(b.due||'9999')||(a.time||'99').localeCompare(b.time||'99')});
  el.innerHTML=list.length?list.map(taskHTML).join(''):'<div class="today-empty">Nothing here right now.</div>';
- var gp=document.getElementById('taskGoalPreview');if(gp){var f=state.fundBalances,cur=periods[state.current].funds;gp.innerHTML=goalHTML('Christmas Fund',(f.Christmas||0)+(cur.Christmas||0),500,'December 25')+goalHTML('GLP-1 Fund',(f['GLP-1']||0)+(cur['GLP-1']||0),334,'November 18')}
+ var gp=document.getElementById('taskGoalPreview');if(gp)gp.innerHTML=goalHTML('Christmas Fund',savingsGoalBalance('Christmas'),500,'December 25')+goalHTML('GLP-1 Fund',savingsGoalBalance('GLP-1'),334,'November 18')
 }
 function addSchedule(){
  var title=document.getElementById('scheduleTitle').value.trim(),date=document.getElementById('scheduleDate').value,start=document.getElementById('scheduleStart').value,end=document.getElementById('scheduleEnd').value;
