@@ -372,7 +372,7 @@ button:focus-visible,summary:focus-visible{outline:3px solid var(--fern);outline
 <section class="card stripe-accent"><div class="sectionhead"><h2>Countdowns</h2><span class="badge">Coming up</span></div><div id="countdowns" class="countdown-grid"></div></section></main>
 
 <main id="calendarPage" class="page">
-<section class="card"><div class="sectionhead"><h2>Calendar</h2><button class="secondary tiny" onclick="openCalendarColors()">Colors</button></div><div id="calendarColorKey" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px"></div><div class="eh-segment"><button id="calModeMonthBtn" class="active" onclick="setCalendarMode('month')">Month</button><button id="calModeWeekBtn" onclick="setCalendarMode('week')">Week</button><button id="calModeAgendaBtn" onclick="setCalendarMode('agenda')">Agenda</button></div><div id="calendarAltView"></div></section><section class="card">
+<section class="card"><div class="sectionhead"><h2>Calendar</h2><button class="secondary tiny" onclick="openCalendarColors()">Colors</button></div><div class="eh-segment"><button id="calModeMonthBtn" class="active" onclick="setCalendarMode('month')">Month</button><button id="calModeWeekBtn" onclick="setCalendarMode('week')">Week</button><button id="calModeAgendaBtn" onclick="setCalendarMode('agenda')">Agenda</button></div><div id="calendarAltView"></div></section><section class="card">
 <div class="sectionhead calendar-view-controls"><div class="tabs"><button class="tab active" id="calMonthBtn" onclick="setCalendarView('month')">Month</button><button class="tab" id="calWeekBtn" onclick="setCalendarView('week')">Week</button><button class="tab" id="calTodayBtn" onclick="goCalendarToday()">Today</button></div></div>
 <div id="monthView"><div class="calendar-head"><button class="secondary" onclick="changeMonth(-1)">Previous</button><h2 id="monthTitle" style="margin:0"></h2><button class="secondary" onclick="changeMonth(1)">Next</button></div><div class="calendar" id="calendar"></div></div>
 <div id="todayView" style="display:none"></div><div id="weekView" style="display:none"><div class="calendar-head"><button class="secondary" onclick="changeWeek(-1)">Previous</button><h2 id="weekTitle" style="margin:0"></h2><button class="secondary" onclick="changeWeek(1)">Next</button></div><div id="weekAgenda"></div></div>
@@ -410,13 +410,14 @@ button:focus-visible,summary:focus-visible{outline:3px solid var(--fern);outline
 </main>
 
 <main id="expensesPage" class="page">
-<section class="card money-card budget-hero"><div class="sectionhead"><div><div class="budget-kicker">Money Overview</div><h2>Budget</h2></div><span class="badge budget-payday" id="budgetPayday"></span></div><div class="safe-big">$<span id="safeHero">0.00</span></div><div class="safe-caption">Safe to spend</div><div class="finance-mini"><div><div class="label">Balance</div><strong>$<span id="bank">0.00</span></strong></div><div><div class="label">Reserved</div><strong>$<span id="reserved">0.00</span></strong></div><div><div class="label">Safe</div><strong>$<span id="safe">0.00</span></strong></div></div></section>
-<section class="card budget-section"><div class="sectionhead"><h2>Current Paycheck</h2><span class="badge" id="currentPayLabel"></span></div><div class="tabs budget-pay-tabs" id="tabs"></div><div class="budget-input-block"><div class="muted">Actual paycheck / starting balance</div><input id="paycheck" type="number" step=".01"></div></section>
+<section class="card money-card budget-hero"><div class="sectionhead"><div><div class="budget-kicker">Money Overview</div><h2>Budget</h2></div><span class="badge budget-payday" id="budgetPayday"></span></div><div class="safe-big">$<span id="safeHero">0.00</span></div><div class="safe-caption">Safe to spend</div><div id="budgetShortfall" role="status" hidden style="margin:10px 0;padding:10px;border-radius:12px;background:rgba(255,255,255,.15)"></div><div class="finance-mini"><div><div class="label">Balance</div><strong>$<span id="bank">0.00</span></strong></div><div><div class="label">Reserved</div><strong>$<span id="reserved">0.00</span></strong></div><div><div class="label">Safe</div><strong>$<span id="safe">0.00</span></strong></div></div></section>
+<section class="card budget-section"><div class="sectionhead"><h2>Current Paycheck</h2><div style="display:flex;gap:8px;align-items:center"><span class="badge" id="currentPayLabel"></span><button class="secondary tiny" onclick="goToCurrentPaycheck()">Current Period</button></div></div><div id="payPeriodRange" class="muted" style="margin-bottom:12px"></div><div class="tabs budget-pay-tabs" id="tabs"></div><div class="budget-input-block"><div class="muted">Actual paycheck / starting balance</div><input id="paycheck" type="number" step=".01"></div></section>
 <section class="card budget-section"><div class="sectionhead"><h2>Spending Budgets</h2><button class="secondary tiny" onclick="openManageBudgets()">Edit Limits</button></div><div id="budgetPageBudgets"></div></section>
 <section class="card budget-section"><div class="sectionhead"><h2>Upcoming Bills</h2><button class="secondary tiny" onclick="openAddBill()">Add Bill</button></div><div id="bills"></div></section>
 <section class="card budget-section savings-card"><div class="sectionhead"><h2>Savings Goals</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="secondary tiny" onclick="openAddSavingsGoal()">Add Goal</button><button class="secondary tiny" onclick="openPayPeriodGoals()">Edit Pay Period</button></div></div><div id="goals"></div></section>
-<section class="card budget-section add-expense-card"><h2>Add Expense</h2><div class="expense-form-space form"><select id="category"><option>Groceries</option><option>Gas</option><option>Marina</option><option>Personal</option><option>Eating Out</option><option>Rent</option><option>Daycare</option><option>Car Insurance</option><option>Subscriptions</option><option>GLP-1</option><option>Christmas</option><option>Savings</option><option>Repayment</option><option>Other</option></select><input id="amount" type="number" step=".01" placeholder="Amount"><input id="expenseDate" type="date"><input id="note" class="wide" placeholder="Store, description, or note"></div><div class="actions"><button onclick="addExpense()">Add Expense</button></div></section>
+<section class="card budget-section add-expense-card"><h2>Add Expense</h2><div class="expense-form-space form"><select id="category" aria-label="Expense category or savings fund"><option>Groceries</option><option>Gas</option><option>Marina</option><option>Personal</option><option>Eating Out</option><option>Rent</option><option>Daycare</option><option>Car Insurance</option><option>Subscriptions</option><option>GLP-1</option><option>Christmas</option><option>Savings</option><option>Repayment</option><option>Other</option></select><input id="amount" type="number" step=".01" placeholder="Amount"><input id="expenseDate" type="date"><input id="note" class="wide" placeholder="Store, description, or note"></div><div class="actions"><button onclick="addExpense()">Add Expense</button></div></section>
 <section class="card budget-section"><div class="sectionhead"><h2>Recent Activity</h2><span class="badge">This paycheck</span></div><div id="history"></div></section>
+<section class="card budget-section"><h2>Upcoming Paychecks</h2><p class="muted">Projected totals include bills, spending limits, and planned savings, before recorded expenses. Select a paycheck to adjust its plan.</p><div id="paycheckForecast"></div></section>
 <section class="budget-next-wrap"><button class="nextbtn budget-next" onclick="nextPaycheck()">Start Next Paycheck</button></section>
 </main>
 
@@ -475,15 +476,16 @@ var periods=[
 {start:'2026-10-07',end:'2026-10-20',label:'Oct 7',bills:[['Rent','2026-10-08',250],['Peacock','2026-10-10',6],['Netflix','2026-10-12',9],['Daycare','2026-10-19',300],['Spotify','2026-10-20',13]],funds:{Savings:100,Christmas:125,'GLP-1':84}},
 {start:'2026-10-21',end:'2026-11-03',label:'Oct 21',bills:[['Rent','2026-10-22',250],['Visible','2026-10-23',35],['Car Insurance','2026-10-24',210],['Canva','2026-10-27',15],['ChatGPT','2026-10-29',20],['Hulu','2026-11-01',12],['Daycare','2026-11-02',300]],funds:{Savings:100,Christmas:25,'GLP-1':84}},
 {start:'2026-11-04',end:'2026-11-17',label:'Nov 4',bills:[['Rent','2026-11-05',250],['Peacock','2026-11-10',6],['Netflix','2026-11-12',9],['Daycare','2026-11-16',300]],funds:{Savings:100,Christmas:125,'GLP-1':84}},
-{start:'2026-11-18',end:'2026-12-01',label:'Nov 18',bills:[['Rent','2026-11-19',250],['Spotify','2026-11-20',13],['Visible','2026-11-23',35],['Car Insurance','2026-11-24',210],['Canva','2026-11-27',15],['ChatGPT','2026-11-29',20],['Hulu','2026-12-01',12]],funds:{Savings:100,Christmas:75,'GLP-1':82}},
+{start:'2026-11-18',end:'2026-12-01',label:'Nov 18',bills:[['Rent','2026-11-19',250],['Spotify','2026-11-20',13],['Visible','2026-11-23',35],['Car Insurance','2026-11-24',210],['Canva','2026-11-27',15],['ChatGPT','2026-11-29',20],['Hulu','2026-12-01',12],['Daycare','2026-11-30',300]],funds:{Savings:100,Christmas:75,'GLP-1':82}},
 {start:'2026-12-02',end:'2026-12-15',label:'Dec 2',bills:[['Rent','2026-12-03',250],['Peacock','2026-12-10',6],['Netflix','2026-12-12',9],['Daycare','2026-12-14',300]],funds:{Savings:100,Christmas:75,'GLP-1':51}},
 {start:'2026-12-16',end:'2026-12-29',label:'Dec 16',bills:[['Rent','2026-12-17',250],['Spotify','2026-12-20',13],['Visible','2026-12-23',35],['Car Insurance','2026-12-24',210],['Canva','2026-12-27',15],['Daycare','2026-12-28',300],['ChatGPT','2026-12-29',20]],funds:{Savings:100,Christmas:75,'GLP-1':51}}
 ];
+periods.forEach(function(period){if(period.start>='2026-11-04')period.funds=standardSavingsPlan()});
 var state={current:0,paychecks:{},expenses:{},paidBills:{},fundBalances:{Savings:0,Christmas:0,'GLP-1':0,Repayment:0},customEvents:[],tasks:[],schedule:[],marinaDays:[]};
 var calYear=2026,calMonth=9;
 function fmt(n){return Number(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})}
 function pk(i){return periods[i].start}
-function ensure(i){var k=pk(i);if(state.paychecks[k]==null)state.paychecks[k]=1450;if(!state.expenses[k])state.expenses[k]=[];if(!state.paidBills[k])state.paidBills[k]={}}
+function ensure(i){extendPayPeriods(i);var k=pk(i);if(state.paychecks[k]==null)state.paychecks[k]=1450;if(!state.expenses[k])state.expenses[k]=[];if(!state.paidBills[k])state.paidBills[k]={}}
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
 function load(){var raw=localStorage.getItem(KEY);if(raw){try{var d=JSON.parse(raw);for(var x in d)state[x]=d[x]}catch(e){}}if(!state.tasks)state.tasks=[];if(!state.schedule)state.schedule=[];if(!state.customEvents)state.customEvents=[];if(!state.marinaDays)state.marinaDays=[];if(!state.spendBudgets)state.spendBudgets=Object.assign({},spendBudgets);if(!state.extraBills)state.extraBills=[];if(!state.billOverrides)state.billOverrides={};ensure(state.current);render()}
 var pageStack=['dashboard'];
@@ -495,11 +497,39 @@ function toast(msg,duration){
 }
 function expenses(){ensure(state.current);return state.expenses[pk(state.current)]}
 function catSpent(c){return expenses().filter(function(x){return x.category===c}).reduce(function(s,x){return s+x.amount},0)}
-function addExpense(){var a=Number(document.getElementById('amount').value),c=document.getElementById('category').value,n=document.getElementById('note').value.trim(),d=document.getElementById('expenseDate').value;if(!a||a<=0){alert('Enter an expense amount.');return}expenses().unshift({id:Date.now(),amount:a,category:c,note:n,date:d});document.getElementById('amount').value='';document.getElementById('note').value='';save();render();toast('Transaction added')}
+function addExpense(){var a=Number(document.getElementById('amount').value),c=document.getElementById('category').value,n=document.getElementById('note').value.trim(),d=document.getElementById('expenseDate').value;if(!a||a<=0){alert('Enter an expense amount.');return}expenses().unshift({id:Date.now(),amount:a,category:c,note:n,date:d});document.getElementById('amount').value='';document.getElementById('note').value='';save();render();var goal=savingsGoals().find(function(goal){return goal.category===c});toast(goal?'$'+fmt(a)+' added to '+goal.name:'Transaction added',3000)}
 function removeExpense(id){state.expenses[pk(state.current)]=expenses().filter(function(x){return x.id!==id});save();render()}
 function toggleBill(i){state.paidBills[pk(state.current)][i]=!state.paidBills[pk(state.current)][i];save();render();refreshTrueMoney();render();toast(state.paidBills[pk(state.current)][i]?'Bill marked paid':'Bill marked unpaid')}
 function selectPeriod(i){state.current=i;ensure(i);var dt=periods[i].start.split('-');calYear=Number(dt[0]);calMonth=Number(dt[1])-1;save();render()}
-function nextPaycheck(){if(state.current>=periods.length-1){alert('The preloaded schedule currently ends on December 16.');return}state.current++;ensure(state.current);save();render();window.scrollTo(0,0)}
+function standardSavingsPlan(){return {Savings:100,'GLP-1':84,Christmas:150,'Car Savings':25,'Marina Savings':25,Repayment:25}}
+function extendPayPeriods(index){
+ while(periods.length<=index){
+  var start=dateAdd(periods[periods.length-1].start,14),end=dateAdd(start,13),bills=[['Rent',dateAdd(start,1),250]];
+  var monthly=[['Peacock',10,6],['Netflix',12,9],['Spotify',20,13],['Visible',23,35],['Car Insurance',24,210],['Canva',27,15],['ChatGPT',29,20],['Hulu',1,12]];
+  for(var date=start;date<=end;date=dateAdd(date,1)){
+   var day=Number(date.slice(8)),lastDay=new Date(Number(date.slice(0,4)),Number(date.slice(5,7)),0).getDate();monthly.forEach(function(bill){if(Math.min(bill[1],lastDay)===day)bills.push([bill[0],date,bill[2]])});
+   if(occursOn('2026-10-19',date,'biweekly'))bills.push(['Daycare',date,300]);
+  }
+  bills.sort(function(a,b){return a[1].localeCompare(b[1])});
+  var label=new Date(start+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  periods.push({start:start,end:end,label:label,bills:bills,funds:standardSavingsPlan()});
+ }
+}
+function goToCurrentPaycheck(){
+ var today=todayISO(),index=0;
+ while(periods[index].end<today){index++;extendPayPeriods(index)}
+ selectPeriod(index);toast('Current pay period selected');
+}
+function renderPaycheckForecast(){
+ extendPayPeriods(state.current+3);
+ document.getElementById('payPeriodRange').textContent=prettyDate(periods[state.current].start)+' – '+prettyDate(periods[state.current].end);
+ document.getElementById('paycheckForecast').innerHTML=[1,2,3].map(function(offset){
+  var index=state.current+offset,key=pk(index),pay=state.paychecks[key]==null?1450:Number(state.paychecks[key]),limits=(state.periodSpendingLimits||{})[key]||state.spendBudgets||spendBudgets,plan=savingsPlan(index);
+  var total=billsForPeriod(index).reduce(function(sum,bill){return sum+Number(bill.amount||0)},0)+Object.values(limits).reduce(function(sum,limit){return sum+Number(limit||0)},0)+Object.values(plan).reduce(function(sum,amount){return sum+Number(amount||0)},0),left=pay-total;
+  return '<div class="tx"><div><strong>'+prettyDate(key)+'</strong><div class="muted">$'+fmt(total)+' planned of $'+fmt(pay)+'</div></div><strong class="'+(left<0?'badtext':'good')+'">$'+fmt(Math.abs(left))+' '+(left<0?'over':'left')+'</strong><button class="secondary tiny" onclick="selectPeriod('+index+')">View</button></div>';
+ }).join('');
+}
+function nextPaycheck(){extendPayPeriods(state.current+1);state.current++;ensure(state.current);save();render();window.scrollTo(0,0)}
 
 var calendarView='month',weekAnchor=new Date();
 
@@ -613,19 +643,33 @@ function applyOct7Budget(){
  if(!state.savingsPlans)state.savingsPlans={};state.savingsPlans[key]={Savings:100,'GLP-1':84,Christmas:125,'Car Savings':25,'Marina Savings':25,Repayment:25};
  state.oct7BudgetApplied=true;save();
 }
+function applyOct21Budget(){
+ if(state.oct21BudgetApplied)return;
+ var key='2026-10-21';state.paychecks[key]=1450;
+ if(!state.periodSpendingLimits)state.periodSpendingLimits={};state.periodSpendingLimits[key]={Groceries:180,Gas:80,Marina:40,Personal:40,'Eating Out':40};
+ if(!state.savingsPlans)state.savingsPlans={};state.savingsPlans[key]={Savings:100,'GLP-1':84,Christmas:0,'Car Savings':25,'Marina Savings':25,Repayment:25};
+ state.oct21BudgetApplied=true;save();
+}
+function applyNov4Budget(){
+ if(state.nov4BudgetApplied)return;
+ var key='2026-11-04';state.paychecks[key]=1450;
+ if(!state.periodSpendingLimits)state.periodSpendingLimits={};state.periodSpendingLimits[key]={Groceries:180,Gas:80,Marina:40,Personal:40,'Eating Out':40};
+ if(!state.savingsPlans)state.savingsPlans={};state.savingsPlans[key]=standardSavingsPlan();
+ state.nov4BudgetApplied=true;save();
+}
 function render(){
- applyOct7Budget();
+ applyOct7Budget();applyOct21Budget();applyNov4Budget();
  ensure(state.current);var p=periods[state.current],k=pk(state.current),ex=expenses(),pay=Number(state.paychecks[k]||0),spent=ex.reduce(function(s,x){return s+x.amount},0),unpaid=0;
  var currentBills=billsForPeriod(state.current);for(var i=0;i<currentBills.length;i++)if(!isBillPaid(currentBills[i]))unpaid+=currentBills[i].amount;
  var fundReserve=savingsPlanReserve(state.current),bank=pay-spent,res=unpaid+fundReserve+variableBudgetRemaining(),safe=bank-res;
- document.getElementById('safeHero').textContent=fmt(safe);document.getElementById('bank').textContent=fmt(bank);document.getElementById('reserved').textContent=fmt(res);document.getElementById('safe').textContent=fmt(safe);document.getElementById('safe').className=safe<0?'badtext':'';
+ var warning=document.getElementById('budgetShortfall');warning.hidden=safe>=0;warning.textContent=safe<0?'Your plan is $'+fmt(-safe)+' over your available balance. Adjust spending or savings for this paycheck.':'';document.getElementById('safeHero').textContent=fmt(safe);document.getElementById('bank').textContent=fmt(bank);document.getElementById('reserved').textContent=fmt(res);document.getElementById('safe').textContent=fmt(safe);document.getElementById('safe').className=safe<0?'badtext':'';
  var pi=document.getElementById('paycheck');pi.value=pay;pi.onchange=function(){state.paychecks[k]=Number(this.value||0);save();render()};
  document.getElementById('tabs').innerHTML=periods.map(function(x,i){return '<button class="tab '+(i===state.current?'active':'')+'" onclick="selectPeriod('+i+')">'+x.label+'</button>'}).join('');
  document.getElementById('bills').innerHTML=currentBills.length?currentBills.map(function(b){var key=billPaidKey(b);return '<div class="bill-row"><div class="bill-main"><input type="checkbox" '+(isBillPaid(b)?'checked':'')+' onchange="toggleBill2(\''+key+'\')"><div><strong>'+escapeHTML(b.name)+'</strong><div class="muted">'+prettyDate(b.date)+(b.repeat&&b.repeat!=='none'?' · '+b.repeat:'')+'</div></div></div><div class="bill-side"><div class="money">$'+fmt(b.amount)+'</div><button class="secondary tiny" onclick="'+(b.base?'editBaseBill('+b.period+','+b.index+')':'openAddBill('+b.extraId+')')+'">Edit</button>'+(b.base?'':'<button class="danger tiny" onclick="deleteExtraBill('+b.extraId+')">Delete</button>')+'</div></div>'}).join(''):'<div class="muted">No bills in this paycheck period.</div>';
  var limits=budgetLimits();document.getElementById('budgets').innerHTML=Object.keys(limits).map(function(c){var b=limits[c],s=catSpent(c),r=b-s,pct=b?Math.min(100,s/b*100):0;return '<div class="cat"><div class="row"><strong>'+c+'</strong><span class="'+(r<0?'badtext':'good')+'">$'+fmt(Math.abs(r))+' '+(r<0?'over':'left')+'</span></div><div class="muted">$'+fmt(s)+' spent of $'+fmt(b)+'</div><div class="bar"><div class="fill '+(r<0?'bad':'')+'" style="width:'+pct+'%"></div></div></div>'}).join('');
  document.getElementById('budgetPageBudgets').innerHTML=document.getElementById('budgets').innerHTML;
  document.getElementById('history').innerHTML=ex.length?ex.map(function(x){return '<div class="tx"><div><strong>'+(x.note||x.category)+'</strong><div class="muted">'+x.category+(x.date?' · '+x.date:'')+'</div></div><div class="money">$'+fmt(x.amount)+'</div><button class="danger tiny" onclick="removeExpense('+x.id+')">Remove</button></div>'}).join(''):'<div class="muted">No expenses for this paycheck yet.</div>';
- renderGoals();renderCalendar();
+ renderPaycheckForecast();renderGoals();renderCalendar();
  document.getElementById('expenseDate').value=p.start;document.getElementById('eventDate').value=p.start;
  var cp=document.getElementById('currentPayLabel');if(cp)cp.textContent=p.label+' paycheck';var bp=document.getElementById('budgetPayday');if(bp)bp.textContent='Payday '+p.label;
  renderToday();renderTasksPage();
@@ -642,8 +686,20 @@ function savingsGoalBalance(category){
  initializeSavingsGoals();var baseline=new Set(state.goalExpenseBaselineIds);
  return Object.values(state.expenses||{}).flat().reduce(function(total,e){return total+(e.category===category&&!baseline.has(e.id)?Number(e.amount||0):0)},0);
 }
-function savingsGoals(){return [{category:'Christmas',name:'Christmas Fund',target:500,deadline:'December 25'},{category:'GLP-1',name:'GLP-1 Fund',target:334,deadline:'November 18'},{category:'Savings',name:'Emergency Savings',target:1000,deadline:'Ongoing'},{category:'Repayment',name:'Repayment',target:8300,deadline:'Ongoing'},{category:'Car Savings',name:'Car Savings',target:null,deadline:'Ongoing'},{category:'Marina Savings',name:'Marina Savings',target:null,deadline:'Ongoing'}].concat(state.customSavingsGoals||[])}
+function savingsGoals(){return [{category:'Christmas',name:'Christmas Fund',target:500,deadline:'December 25'},{category:'GLP-1',name:'GLP-1 Fund',target:334,deadline:'November 18'},{category:'Savings',name:'Emergency Savings',target:1000,deadline:'Ongoing'},{category:'Repayment',name:'Repayment',target:8300,deadline:'Ongoing'},{category:'Car Savings',name:'Car Savings',target:null,deadline:'Ongoing'},{category:'Marina Savings',name:'Marina Savings',target:null,deadline:'Ongoing'}].concat(state.customSavingsGoals||[]).map(function(goal){return Object.assign({},goal,(state.savingsGoalDetails||{})[goal.category]||{})})}
 function savingsGoalNames(){return Object.fromEntries(savingsGoals().map(function(goal){return [goal.category,goal.name]}))}
+function openEditSavingsGoal(index){
+ var goal=savingsGoals()[index];if(!goal)return;
+ document.getElementById('modalbox').innerHTML='<h2>Edit Savings Goal</h2><div class="form"><label>Goal name<input id="editSavingsName" maxlength="80"></label><label>Target amount<input id="editSavingsTarget" type="number" min="0.01" step="0.01" placeholder="Optional"></label></div><p class="muted">Leave the target blank for an ongoing goal. Contributions and pay period plans are preserved.</p><div class="actions"><button onclick="saveSavingsGoalDetails('+index+')">Save Changes</button><button class="secondary" onclick="closeModal()">Cancel</button></div>';
+ document.getElementById('editSavingsName').value=goal.name;document.getElementById('editSavingsTarget').value=goal.target==null?'':goal.target;document.getElementById('modal').classList.add('show');
+}
+function saveSavingsGoalDetails(index){
+ var goal=savingsGoals()[index],nameInput=document.getElementById('editSavingsName'),targetInput=document.getElementById('editSavingsTarget'),name=nameInput.value.trim(),target=targetInput.value===''?null:Number(targetInput.value);
+ if(!name){alert('Enter a goal name.');nameInput.focus();return}
+ if(savingsGoals().some(function(other){return other.category!==goal.category&&other.name.toLowerCase()===name.toLowerCase()})||Array.from(document.getElementById('category').options).some(function(option){return option.value!==goal.category&&option.textContent.toLowerCase()===name.toLowerCase()})){alert('Choose a unique goal name.');nameInput.focus();return}
+ if(target!=null&&(!Number.isFinite(target)||target<=0||!targetInput.checkValidity())){alert('Enter a positive target amount or leave it blank.');targetInput.focus();return}
+ if(!state.savingsGoalDetails)state.savingsGoalDetails={};state.savingsGoalDetails[goal.category]={name:name,target:target};save();closeModal();render();toast('Savings goal updated',3000);
+}
 function openAddSavingsGoal(){
  document.getElementById('modalbox').innerHTML='<h2>Add Savings Goal</h2><div class="form"><label>Goal name<input id="savingsGoalName" placeholder="e.g. Vacation" maxlength="80"></label><label>Target amount<input id="savingsGoalTarget" type="number" min="0.01" step="0.01" placeholder="0.00"></label></div><div class="actions"><button onclick="saveNewSavingsGoal()">Add Goal</button><button class="secondary" onclick="closeModal()">Cancel</button></div>';
  document.getElementById('modal').classList.add('show');
@@ -658,11 +714,14 @@ function saveNewSavingsGoal(){
  state.customSavingsGoals.push({category:'savings-goal-'+crypto.randomUUID(),name:name,target:target,deadline:'Ongoing'});save();closeModal();render();toast('Savings goal added',3000);
 }
 function syncSavingsExpenseCategories(){
- var select=document.getElementById('category'),selected=select.value;
- select.querySelectorAll('option[data-savings-goal]').forEach(function(option){option.remove()});
- savingsGoals().filter(function(goal){return !Array.from(select.options).some(function(option){return option.value===goal.category})}).forEach(function(goal){var option=document.createElement('option');option.value=goal.category;option.textContent=goal.name;option.dataset.savingsGoal='true';select.appendChild(option)});
+ var select=document.getElementById('category'),selected=select.value,goals=savingsGoals(),categories=new Set(goals.map(function(goal){return goal.category}));
+ select.querySelectorAll('optgroup[data-savings-goals]').forEach(function(group){group.remove()});
+ Array.from(select.options).filter(function(option){return categories.has(option.value)||option.dataset.savingsGoal}).forEach(function(option){option.remove()});
+ var group=document.createElement('optgroup');group.label='Savings Goals';group.dataset.savingsGoals='true';
+ goals.forEach(function(goal){var option=document.createElement('option');option.value=goal.category;option.textContent=goal.name;group.appendChild(option)});select.appendChild(group);
  if(Array.from(select.options).some(function(option){return option.value===selected}))select.value=selected;
 }
+
 function savingsPlan(index){return Object.assign(Object.fromEntries(savingsGoals().map(function(goal){return [goal.category,0]})),periods[index].funds,(state.savingsPlans||{})[pk(index)]||{})}
 function periodSavingsContributions(index,category){
  var baseline=new Set(state.goalExpenseBaselineIds||[]);
@@ -681,10 +740,10 @@ function savePayPeriodGoals(index){
 }
 function renderGoals(){
  initializeSavingsGoals();syncSavingsExpenseCategories();var plan=savingsPlan(state.current);
- document.getElementById('goals').innerHTML=savingsGoals().map(function(goal){return goalHTML(goal.name,savingsGoalBalance(goal.category),goal.target,goal.deadline)+'<div class="muted" style="margin-top:-10px;margin-bottom:16px">This paycheck: $'+fmt(periodSavingsContributions(state.current,goal.category))+' contributed / $'+fmt(plan[goal.category])+' planned</div>'}).join('');
+ document.getElementById('goals').innerHTML=savingsGoals().map(function(goal,index){return goalHTML(goal.name,savingsGoalBalance(goal.category),goal.target,goal.deadline)+'<button class="secondary tiny" style="margin-bottom:12px" onclick="openEditSavingsGoal('+index+')">Edit Goal</button><div class="muted" style="margin-top:-10px;margin-bottom:16px">This paycheck: $'+fmt(periodSavingsContributions(state.current,goal.category))+' contributed / $'+fmt(plan[goal.category])+' planned</div>'}).join('');
 }
 
-function goalHTML(n,v,t,d){n=escapeHTML(n);d=escapeHTML(d);if(t==null)return '<div class="goalcard"><div class="goalhead"><strong>'+n+'</strong><span>$'+fmt(v)+'</span></div><div class="muted">'+d+'</div></div>';var pct=Math.min(100,v/t*100);return '<div class="goalcard"><div class="goalhead"><strong>'+n+'</strong><span>$'+fmt(v)+' / $'+fmt(t)+'</span></div><div class="bar"><div class="fill" style="width:'+pct+'%"></div></div><div class="muted">'+d+' · $'+fmt(Math.max(0,t-v))+' remaining</div></div>'}
+function goalHTML(n,v,t,d){n=escapeHTML(n);d=escapeHTML(d);if(t==null)return '<div class="goalcard"><div class="goalhead"><strong>'+n+'</strong><span>$'+fmt(v)+'</span></div><div class="bar" aria-hidden="true"><div class="fill" style="width:'+(v>0?100:0)+'%"></div></div><div class="muted">Total saved · No target set</div></div>';var pct=Math.min(100,v/t*100);return '<div class="goalcard"><div class="goalhead"><strong>'+n+'</strong><span>$'+fmt(v)+' / $'+fmt(t)+'</span></div><div class="bar"><div class="fill" style="width:'+pct+'%"></div></div><div class="muted">'+d+' · $'+fmt(Math.max(0,t-v))+' remaining</div></div>'}
 function renderNext7(){
  var start=new Date(periods[state.current].start+'T12:00:00'),end=new Date(start);end.setDate(end.getDate()+7);
  var es=allEvents().filter(function(e){var d=new Date(e.date+'T12:00:00');return d>=start&&d<end}).sort(function(a,b){return a.date.localeCompare(b.date)});
@@ -700,7 +759,6 @@ function calendarColorText(color){
 function applyCalendarColors(){
  var style=document.getElementById('calendarColorStyles');if(!style){style=document.createElement('style');style.id='calendarColorStyles';document.head.appendChild(style)}
  style.textContent=calendarColorTypes().map(function(item){var color=calendarTypeColor(item),selector=['.event','.week-time-event','.timeline-event','.week-preview-item'].map(function(cls){return cls+'.'+item.type}).join(',');return selector+'{background:'+color+'!important;color:'+calendarColorText(color)+'!important;border-left-color:'+color+'!important}'+'.eh-listrow.calendar-type-'+item.type+' .eh-dot{background:'+color+'!important}'+selector.split(',').map(function(cls){return cls+' small'}).join(',')+'{color:inherit!important}'}).join('');
- document.getElementById('calendarColorKey').innerHTML=calendarColorTypes().map(function(item){return '<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px"><span style="width:12px;height:12px;border-radius:50%;border:1px solid rgba(0,0,0,.15);background:'+calendarTypeColor(item)+'"></span>'+item.name+'</span>'}).join('');
 }
 function openCalendarColors(){
  document.getElementById('modalbox').innerHTML='<h2>Calendar Colors</h2><p class="muted">Choose a color for each event type. Existing and new events use the same colors.</p><div class="form">'+calendarColorTypes().map(function(item){return '<label>'+item.name+'<input type="color" class="calendar-color-input" data-type="'+item.type+'" value="'+calendarTypeColor(item)+'" style="height:48px"></label>'}).join('')+'</div><div class="actions"><button onclick="saveCalendarColors()">Save Colors</button><button class="secondary" onclick="closeModal()">Cancel</button></div>';
