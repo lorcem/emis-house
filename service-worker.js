@@ -1,4 +1,4 @@
-const CACHE='emis-house-2-7-editable-budget-v1';
+const CACHE='emis-house-clean-layout-2026-10-07-v1';
 const ASSETS=["./", "./index.html", "./manifest.json"];
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
