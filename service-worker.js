@@ -1,5 +1,5 @@
-const CACHE='emis-house-colorful-accents-2026-10-07-v1';
-const ASSETS=["./", "./index.html", "./manifest.json", "./icons/icon-192.png", "./icons/house-512.png", "./icons/apple-touch-icon.png", "./icons/favicon.png", "./icons/house-background.png", "./fonts/fredoka.ttf", "./fonts/dynapuff.ttf"];
+const CACHE='emis-house-palette-sparkles-2026-10-07-v2';
+const ASSETS=["./", "./index.html", "./manifest.json", "./icons/icon-192.png", "./icons/house-512.png", "./icons/apple-touch-icon.png", "./icons/favicon.png", "./fonts/fredoka.ttf", "./fonts/dynapuff.ttf"];
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
  self.skipWaiting();

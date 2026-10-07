@@ -391,11 +391,11 @@ label{line-height:1.5}.form label>input,.form label>select{margin-top:6px}
 @media(max-width:430px){.app{padding-inline:14px!important}.card{padding:16px!important}.sectionhead{gap:10px}.card h2,.sectionhead h2{font-size:18px!important}.app-topbar h1{font-size:25px!important}.sectionhead>div:last-child{flex-wrap:wrap}.savings-goal-footer{align-items:flex-start}.goalhead span{font-size:12px}.budget-hero .safe-big{font-size:40px!important}}
 
 .week-time-event[role=button],.timeline-event[role=button],.eh-listrow[role=button]{cursor:pointer}.week-time-event:focus-visible,.timeline-event:focus-visible,.eh-listrow:focus-visible{outline:2px solid var(--fern);outline-offset:2px}
-.hero-date{display:flex;align-items:center;min-height:154px;isolation:isolate}.hero-copy{position:relative;z-index:1;padding-right:8px}.house-doodle{position:absolute;right:8px;top:0;z-index:0;display:block;width:154px;height:154px;object-fit:contain;opacity:.11;pointer-events:none}.hero-date .funky-star{z-index:2}@media(max-width:380px){.house-doodle{right:0;width:144px;height:144px}.hero-date{min-height:144px}}
+.hero-date{display:flex;align-items:center;min-height:154px;isolation:isolate}.hero-copy{position:relative;z-index:1;padding-right:8px}.hero-date .funky-star{z-index:2}@media(max-width:380px){.hero-date{min-height:144px}}
 
 @font-face{font-family:'Fredoka';src:url('fonts/fredoka.ttf') format('truetype');font-weight:300 700;font-display:swap}
 .app-topbar h1{font-family:'Fredoka','Arial Rounded MT Bold',sans-serif!important;font-size:36px!important;font-weight:600!important;letter-spacing:.005em;line-height:1.05;transform:rotate(-2deg);font-variation-settings:'wdth' 105}
-.house-doodle{transform:scaleX(-1)}
+
 .star-c,.star-d,.star-e{clip-path:polygon(50% 0,62% 36%,100% 50%,62% 64%,50% 100%,38% 64%,0 50%,38% 36%)}
 .star-c{left:12px;top:9px;width:13px;height:13px;background:var(--honey)}
 .star-d{right:97px;bottom:15px;width:14px;height:14px;background:var(--peony)}
@@ -411,8 +411,8 @@ label{line-height:1.5}.form label>input,.form label>select{margin-top:6px}
 .brand-word>span:nth-child(5n+3){color:#B7CBDB;transform:rotate(-2deg) translateY(2px)}
 .brand-word>span:nth-child(5n+4){color:#FECDBE;transform:rotate(4deg) translateY(-2px)}
 .brand-word>span:nth-child(5n){color:#FCC88A;transform:rotate(-3deg)}
-.house-doodle{transform:none;width:160px;height:160px;right:4px;opacity:.12}
-@media(max-width:350px){.app-topbar h1.brand-title{font-size:28px!important}.house-doodle{width:144px;height:144px}}
+
+@media(max-width:350px){.app-topbar h1.brand-title{font-size:28px!important}}
 
 
 /* Colorful accents keep the cream canvas and dark, readable content. */
@@ -457,6 +457,21 @@ label{line-height:1.5}.form label>input,.form label>select{margin-top:6px}
 .task-item:not(.done):nth-child(3n){background:rgba(254,205,190,.28)!important}
 .bottomnav>button.active:not(.quickplus){background:var(--fennel)!important}
 
+
+/* Decorative palette sparkles stay outside controls and reading areas. */
+.screen-sparkles{display:flex;align-items:center;justify-content:space-between;gap:12px;height:22px;margin:0 4px 14px;padding:0 8px;pointer-events:none;user-select:none}
+.screen-sparkles span{display:block;flex:none;width:12px;height:17px;background:var(--fern);clip-path:polygon(50% 0,62% 36%,100% 50%,62% 64%,50% 100%,38% 64%,0 50%,38% 36%)}
+.screen-sparkles span:nth-child(2){background:var(--pistachio);width:9px;height:13px;transform:rotate(15deg)}
+.screen-sparkles span:nth-child(3){background:var(--fennel);width:16px;height:20px}
+.screen-sparkles span:nth-child(4){background:var(--cherry);width:11px;height:15px;transform:rotate(-12deg)}
+.screen-sparkles span:nth-child(5){background:var(--peony);width:17px;height:21px}
+.screen-sparkles span:nth-child(6){background:var(--bluebell);width:10px;height:15px;transform:rotate(12deg)}
+.screen-sparkles span:nth-child(7){background:var(--honey);width:14px;height:18px}
+.page>.card:not(.money-card):after{content:'';display:block;pointer-events:none;width:13px;height:17px;background:var(--bluebell);margin:12px 0 0 auto;clip-path:polygon(50% 0,62% 36%,100% 50%,62% 64%,50% 100%,38% 64%,0 50%,38% 36%)}
+.page>.card:nth-of-type(3n):not(.money-card):after{background:var(--honey)}
+.page>.card:nth-of-type(3n+1):not(.money-card):after{background:var(--peony)}
+#calendarPage .screen-sparkles span:nth-child(even),#tasksPage .screen-sparkles span:nth-child(odd){transform:translateY(4px) rotate(12deg)}
+
 </style>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#768E78">
@@ -474,15 +489,15 @@ label{line-height:1.5}.form label>input,.form label>select{margin-top:6px}
 <button data-page="tasksPage" onclick="showPage('tasksPage')"><svg class="eh-navsvg" viewBox="0 0 24 24"><path d="m4 7 2 2 4-4M12 7h8M4 14l2 2 4-4M12 14h8M4 21l2 2 4-4M12 21h8"/></svg><span>Tasks</span></button>
 </nav>
 
-<main id="dashboard" class="page active">
+<main id="dashboard" class="page active"><div class="screen-sparkles" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
 
-<div class="grid"></div><section class="hero-date"><div class="hero-copy"><h2 class="hero-greeting" id="greetingText">Good afternoon, Emi</h2><div class="hero-sub" id="todayDate"></div></div><img class="house-doodle" src="icons/house-background.png" width="154" height="154" alt="" aria-hidden="true"><div class="funky-star star-a"></div><div class="funky-star star-b"></div><div class="funky-star star-c"></div><div class="funky-star star-d"></div><div class="funky-star star-e"></div></section><div id="marinaToday"></div>
+<div class="grid"></div><section class="hero-date"><div class="hero-copy"><h2 class="hero-greeting" id="greetingText">Good afternoon, Emi</h2><div class="hero-sub" id="todayDate"></div></div><div class="funky-star star-a"></div><div class="funky-star star-b"></div><div class="funky-star star-c"></div><div class="funky-star star-d"></div><div class="funky-star star-e"></div></section><div id="marinaToday"></div>
 <section class="week-card"><div class="sectionhead"><h2>This Week</h2></div><div class="weekbar" id="weekStrip"></div></section>
 <section class="card"><div class="sectionhead"><h2>Spending Budgets</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="tiny" onclick="openDashboardExpense()">Add Expense</button><button class="secondary tiny" onclick="openManageBudgets()">Edit</button></div></div><div id="budgets"></div></section>
 <div class="dashboard-grid"><section class="card"><div class="sectionhead"><h2>Today's Schedule</h2><button class="secondary tiny" onclick="showQuickSchedule()">Add</button></div><div id="todaySchedule"></div></section><section class="card"><div class="sectionhead"><h2>Today's Tasks</h2><button class="secondary tiny" onclick="showQuickTask()">Add</button></div><div id="todayTasks"></div></section></div>
 <section class="card stripe-accent"><div class="sectionhead"><h2>Countdowns</h2><span class="badge">Coming up</span></div><div id="countdowns" class="countdown-grid"></div></section></main>
 
-<main id="calendarPage" class="page">
+<main id="calendarPage" class="page"><div class="screen-sparkles" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
 <section class="card"><div class="sectionhead"><h2>Calendar</h2><button class="secondary tiny" onclick="openCalendarColors()">Colors</button></div><div class="eh-segment"><button id="calModeMonthBtn" class="active" onclick="setCalendarMode('month')">Month</button><button id="calModeWeekBtn" onclick="setCalendarMode('week')">Week</button><button id="calModeAgendaBtn" onclick="setCalendarMode('agenda')">Agenda</button></div><div id="calendarAltView"></div></section><section class="card">
 <div class="sectionhead calendar-view-controls"><div class="tabs"><button class="tab active" id="calMonthBtn" onclick="setCalendarView('month')">Month</button><button class="tab" id="calWeekBtn" onclick="setCalendarView('week')">Week</button><button class="tab" id="calTodayBtn" onclick="goCalendarToday()">Today</button></div></div>
 <div id="monthView"><div class="calendar-head"><button class="secondary" onclick="changeMonth(-1)">Previous</button><h2 id="monthTitle" style="margin:0"></h2><button class="secondary" onclick="changeMonth(1)">Next</button></div><div class="calendar" id="calendar"></div></div>
@@ -520,7 +535,7 @@ label{line-height:1.5}.form label>input,.form label>select{margin-top:6px}
 </div><div class="actions"><button id="marinaSaveButton" onclick="addMarinaDay()">Add Marina Day</button><button id="marinaCancelButton" class="secondary" onclick="cancelMarinaEdit()" hidden>Cancel edit</button></div></details><p class="muted">Editing or deleting a repeating Marina day applies to the entire schedule.</p><div id="marinaDayList"></div></section>
 </main>
 
-<main id="expensesPage" class="page">
+<main id="expensesPage" class="page"><div class="screen-sparkles" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
 <section class="card money-card budget-hero"><div class="sectionhead"><div><div class="budget-kicker">Money Overview</div><h2>Budget</h2></div><span class="badge budget-payday" id="budgetPayday"></span></div><div class="safe-big">$<span id="safeHero">0.00</span></div><div class="safe-caption">Safe to spend</div><div id="budgetShortfall" role="status" hidden style="margin:10px 0;padding:10px;border-radius:12px;background:rgba(255,255,255,.15)"></div><div class="finance-mini"><div><div class="label">Balance</div><strong>$<span id="bank">0.00</span></strong></div><div><div class="label">Reserved</div><strong>$<span id="reserved">0.00</span></strong></div><div><div class="label">Safe</div><strong>$<span id="safe">0.00</span></strong></div></div></section>
 <section class="card budget-section"><div class="sectionhead"><h2>Current Paycheck</h2><div style="display:flex;gap:8px;align-items:center"><span class="badge" id="currentPayLabel"></span><button class="secondary tiny" onclick="goToCurrentPaycheck()">Current Period</button></div></div><div id="payPeriodRange" class="muted" style="margin-bottom:12px"></div><div class="tabs budget-pay-tabs" id="tabs"></div><div class="budget-input-block"><div class="muted">Actual paycheck / starting balance</div><input id="paycheck" type="number" step=".01"></div></section>
 <section class="card budget-section"><div class="sectionhead"><h2>Spending Budgets</h2><button class="secondary tiny" onclick="openManageBudgets()">Edit</button></div><div id="budgetPageBudgets"></div></section>
@@ -532,7 +547,7 @@ label{line-height:1.5}.form label>input,.form label>select{margin-top:6px}
 <section class="budget-next-wrap"><button class="nextbtn budget-next" onclick="nextPaycheck()">Start Next Paycheck</button></section>
 </main>
 
-<main id="tasksPage" class="page">
+<main id="tasksPage" class="page"><div class="screen-sparkles" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
 <section class="card"><h2 class="form-card-title">My Tasks</h2><details class="collapsible-form"><summary>Add Task <span>+</span></summary><div class="planner-form">
 <label class="full"><span class="muted">Task</span><input id="taskTitle" placeholder="What do you need to do?"></label>
 <label><span class="muted">Category</span><select id="taskCategory"><option>Personal</option><option>School</option><option>Work</option><option>Home</option><option>Marina</option><option>Errand</option><option>Finance</option></select></label>
@@ -546,13 +561,13 @@ label{line-height:1.5}.form label>input,.form label>select{margin-top:6px}
 
 </main>
 
-<main id="goalsPage" class="page">
+<main id="goalsPage" class="page"><div class="screen-sparkles" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
 <section class="card"><h2>Savings Goals</h2><div id="goals"></div></section>
 <section class="card"><h2>Data & Backup</h2><div class="actions"><button class="secondary" onclick="exportData()">Export Backup</button><button class="danger" onclick="resetAll()">Reset Entire App</button></div><div class="muted" style="margin-top:10px">Your data is stored locally in Safari on this device. Export a backup periodically.</div></section>
 </main>
 </div>
 
-<main id="settingsPage" class="page">
+<main id="settingsPage" class="page"><div class="screen-sparkles" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
 <section class="card"><div class="sectionhead"><h2>Preferences</h2><span class="eh-chip">2.0</span></div><div class="eh-settings-grid"><div class="eh-setting"><div><strong>Week starts Sunday</strong><div class="muted">Calendar and dashboard week</div></div><div class="eh-toggle on"></div></div><div class="eh-setting"><div><strong>Default calendar</strong><div class="muted">Month view</div></div><span class="eh-chip">Month</span></div><div class="eh-setting"><div><strong>Appearance</strong><div class="muted">Warm light theme</div></div><span class="eh-chip">Light</span></div></div></section><section class="card">
   <div class="sectionhead"><h2>Settings & Backup</h2><span class="badge">Your data</span></div>
   <p class="muted">Emi’s House stores your planner data on this device. Export a backup before changing browsers, clearing website data, or moving from the local file to the hosted app.</p>
