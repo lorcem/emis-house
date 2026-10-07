@@ -494,7 +494,7 @@ label{line-height:1.5}.form label>input,.form label>select{margin-top:6px}
 
 <div class="grid"></div><section class="hero-date"><div class="hero-copy"><h2 class="hero-greeting" id="greetingText">Good afternoon, Emi</h2><div class="hero-sub" id="todayDate"></div></div></section><div id="marinaToday"></div>
 <section class="week-card"><div class="sectionhead"><h2>This Week</h2></div><div class="weekbar" id="weekStrip"></div></section>
-<section class="card"><div class="sectionhead"><h2>Spending Budgets</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="tiny" onclick="openDashboardExpense()">Add Expense</button><button class="secondary tiny" onclick="openManageBudgets()">Edit</button></div></div><div id="budgets"></div></section>
+<section class="card"><div class="sectionhead"><h2>Spending Budgets</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="tiny" onclick="openDashboardExpense()">Add Expense</button><button class="secondary tiny" onclick="openDeposit()">Add Money</button><button class="secondary tiny" onclick="openManageBudgets()">Edit</button></div></div><div id="budgets"></div></section>
 <div class="dashboard-grid"><section class="card"><div class="sectionhead"><h2>Today's Schedule</h2><button class="secondary tiny" onclick="showQuickSchedule()">Add</button></div><div id="todaySchedule"></div></section><section class="card"><div class="sectionhead"><h2>Today's Tasks</h2><button class="secondary tiny" onclick="showQuickTask()">Add</button></div><div id="todayTasks"></div></section></div>
 <section class="card stripe-accent"><div class="sectionhead"><h2>Countdowns</h2><span class="badge">Coming up</span></div><div id="countdowns" class="countdown-grid"></div></section></main>
 
@@ -537,7 +537,7 @@ label{line-height:1.5}.form label>input,.form label>select{margin-top:6px}
 </main>
 
 <main id="expensesPage" class="page">
-<section class="card money-card budget-hero"><div class="sectionhead"><div><div class="budget-kicker">Money Overview</div><h2>Budget</h2></div><span class="badge budget-payday" id="budgetPayday"></span></div><div class="safe-big">$<span id="safeHero">0.00</span></div><div class="safe-caption">Safe to spend</div><div id="budgetShortfall" role="status" hidden style="margin:10px 0;padding:10px;border-radius:12px;background:rgba(255,255,255,.15)"></div><div class="finance-mini"><div><div class="label">Balance</div><strong>$<span id="bank">0.00</span></strong></div><div><div class="label">Reserved</div><strong>$<span id="reserved">0.00</span></strong></div><div><div class="label">Safe</div><strong>$<span id="safe">0.00</span></strong></div></div></section>
+<section class="card money-card budget-hero"><div class="sectionhead"><div><div class="budget-kicker">Money Overview</div><h2>Budget</h2></div><div style="display:flex;gap:8px;flex-wrap:wrap"><span class="badge budget-payday" id="budgetPayday"></span><button class="secondary tiny" onclick="openDeposit()">Add Money</button></div></div><div class="safe-big">$<span id="safeHero">0.00</span></div><div class="safe-caption">Safe to spend</div><div id="budgetShortfall" role="status" hidden style="margin:10px 0;padding:10px;border-radius:12px;background:rgba(255,255,255,.15)"></div><div class="finance-mini"><div><div class="label">Balance</div><strong>$<span id="bank">0.00</span></strong></div><div><div class="label">Reserved</div><strong>$<span id="reserved">0.00</span></strong></div><div><div class="label">Safe</div><strong>$<span id="safe">0.00</span></strong></div></div></section>
 <section class="card budget-section"><div class="sectionhead"><h2>Current Paycheck</h2><div style="display:flex;gap:8px;align-items:center"><span class="badge" id="currentPayLabel"></span><button class="secondary tiny" onclick="goToCurrentPaycheck()">Current Period</button></div></div><div id="payPeriodRange" class="muted" style="margin-bottom:12px"></div><div class="tabs budget-pay-tabs" id="tabs"></div><div class="budget-input-block"><div class="muted">Actual paycheck / starting balance</div><input id="paycheck" type="number" step=".01"></div></section>
 <section class="card budget-section"><div class="sectionhead"><h2>Spending Budgets</h2><button class="secondary tiny" onclick="openManageBudgets()">Edit</button></div><div id="budgetPageBudgets"></div></section>
 <section class="card budget-section"><div class="sectionhead"><h2>Upcoming Bills</h2><button class="secondary tiny" onclick="openAddBill()">Add Bill</button></div><div id="bills"></div></section>
@@ -631,6 +631,32 @@ function openDashboardExpense(){
  document.getElementById('saveDashboardExpense').onclick=function(){var amount=document.getElementById('quickExpenseamount');if(!amount.checkValidity()||!amount.value||Number(amount.value)<=0){alert('Enter a positive expense amount.');amount.focus();return}addExpense('quickExpense')};
  document.getElementById('modal').classList.add('show');
 }
+function deposits(index){return (state.deposits||{})[pk(index)]||[]}
+function depositTotal(index){return deposits(index).reduce(function(total,item){return total+Number(item.amount||0)},0)}
+function openDeposit(id){
+ var index=state.current,item=id==null?null:deposits(index).find(function(x){return x.id===id});if(id!=null&&!item)return;
+ document.getElementById('modalbox').innerHTML='<h2>'+(item?'Edit Deposit':'Add Money')+'</h2><p class="muted">Added to your '+escapeHTML(periods[index].label)+' paycheck period. This increases your balance without changing your spending limits.</p><form id="depositForm"><div class="form"><label>Amount<input id="depositAmount" type="number" min="0.01" step="0.01" inputmode="decimal" required></label><label>Date<input id="depositDate" type="date" required></label><label class="wide">Source or note<input id="depositNote" placeholder="Refund, gift, extra income…" maxlength="200"></label></div><div class="actions"><button type="submit">'+(item?'Save Changes':'Add Money')+'</button><button type="button" class="secondary" onclick="closeModal()">Cancel</button></div></form>';
+ document.getElementById('depositAmount').value=item?item.amount:'';document.getElementById('depositDate').value=item?item.date:todayISO();document.getElementById('depositNote').value=item?item.note:'';
+ document.getElementById('depositForm').onsubmit=function(event){event.preventDefault();saveDeposit(index,id)};
+ document.getElementById('modal').classList.add('show');
+}
+function saveDeposit(index,id){
+ var input=document.getElementById('depositAmount'),amount=Number(input.value),date=document.getElementById('depositDate').value,note=document.getElementById('depositNote').value.trim();
+ if(!Number.isFinite(amount)||amount<=0||!input.checkValidity()||!date)return;
+ if(!state.deposits)state.deposits={};var key=pk(index);if(!state.deposits[key])state.deposits[key]=[];
+ var item=id==null?null:state.deposits[key].find(function(x){return x.id===id});if(id!=null&&!item)return;
+ if(item){item.amount=amount;item.date=date;item.note=note}else state.deposits[key].unshift({id:Date.now(),amount:amount,date:date,note:note});
+ save();closeModal();render();toast(item?'Deposit updated':'$'+fmt(amount)+' added to your balance',3000);
+}
+function removeDeposit(id){
+ if(!confirm('Remove this deposit from your balance?'))return;
+ if(state.deposits)state.deposits[pk(state.current)]=deposits(state.current).filter(function(item){return item.id!==id});save();render();toast('Deposit removed');
+}
+function renderActivity(ex){
+ var rows=ex.map(function(item){return {item:item,deposit:false}}).concat(deposits(state.current).map(function(item){return {item:item,deposit:true}})).sort(function(a,b){return (b.item.date||'').localeCompare(a.item.date||'')||b.item.id-a.item.id});
+ document.getElementById('history').innerHTML=rows.length?rows.map(function(row){var x=row.item,isDeposit=row.deposit;return '<div class="tx"><div><strong>'+escapeHTML(x.note||(isDeposit?'Deposit':x.category))+'</strong><div class="muted">'+escapeHTML(isDeposit?'Money added':x.category)+(x.date?' · '+escapeHTML(x.date):'')+'</div></div><div class="money '+(isDeposit?'good':'')+'">'+(isDeposit?'+':'')+'$'+fmt(x.amount)+'</div><div class="expense-actions"><button class="secondary tiny" onclick="'+(isDeposit?'openDeposit':'editExpense')+'('+x.id+')">Edit</button><button class="danger tiny" onclick="'+(isDeposit?'removeDeposit':'removeExpense')+'('+x.id+')">Remove</button></div></div>'}).join(''):'<div class="muted">No activity for this paycheck yet.</div>';
+}
+
 function addExpense(prefix){prefix=prefix||'';var a=Number(document.getElementById(prefix+'amount').value),c=document.getElementById(prefix+'category').value,n=document.getElementById(prefix+'note').value.trim(),d=document.getElementById(prefix+'expenseDate').value;if(!a||a<=0){alert('Enter an expense amount.');return}expenses().unshift({id:Date.now(),amount:a,category:c,note:n,date:d});document.getElementById(prefix+'amount').value='';document.getElementById(prefix+'note').value='';save();if(prefix)closeModal();render();var goal=savingsGoals().find(function(goal){return goal.category===c});toast(goal?'$'+fmt(a)+' added to '+goal.name:'Transaction added',3000)}
 function editExpense(id){
  var index=state.current,expense=(state.expenses[pk(index)]||[]).find(function(item){return item.id===id});if(!expense)return;
@@ -673,7 +699,7 @@ function renderPaycheckForecast(){
  document.getElementById('payPeriodRange').textContent=prettyDate(periods[state.current].start)+' – '+prettyDate(periods[state.current].end);
  document.getElementById('paycheckForecast').innerHTML=[1,2,3].map(function(offset){
   var index=state.current+offset,key=pk(index),pay=state.paychecks[key]==null?1450:Number(state.paychecks[key]),limits=(state.periodSpendingLimits||{})[key]||state.spendBudgets||spendBudgets,plan=savingsPlan(index);
-  var total=billsForPeriod(index).reduce(function(sum,bill){return sum+Number(bill.amount||0)},0)+Object.values(limits).reduce(function(sum,limit){return sum+Number(limit||0)},0)+Object.values(plan).reduce(function(sum,amount){return sum+Number(amount||0)},0),left=pay-total;
+  var total=billsForPeriod(index).reduce(function(sum,bill){return sum+Number(bill.amount||0)},0)+Object.values(limits).reduce(function(sum,limit){return sum+Number(limit||0)},0)+Object.values(plan).reduce(function(sum,amount){return sum+Number(amount||0)},0),left=pay+depositTotal(index)-total;
   return '<div class="tx"><div><strong>'+prettyDate(key)+'</strong><div class="muted">$'+fmt(total)+' planned of $'+fmt(pay)+'</div></div><strong class="'+(left<0?'badtext':'good')+'">$'+fmt(Math.abs(left))+' '+(left<0?'over':'left')+'</strong><button class="secondary tiny" onclick="selectPeriod('+index+')">View</button></div>';
  }).join('');
 }
@@ -832,14 +858,14 @@ function render(){
  applyOct7Budget();applyOct21Budget();applyNov4Budget();
  ensure(state.current);var p=periods[state.current],k=pk(state.current),ex=expenses(),pay=Number(state.paychecks[k]||0),spent=ex.reduce(function(s,x){return s+x.amount},0),unpaid=0;
  var currentBills=billsForPeriod(state.current);for(var i=0;i<currentBills.length;i++)if(!isBillPaid(currentBills[i]))unpaid+=currentBills[i].amount;
- var fundReserve=savingsPlanReserve(state.current),bank=pay-spent,res=unpaid+fundReserve+variableBudgetRemaining(),safe=bank-res;
+ var fundReserve=savingsPlanReserve(state.current),bank=pay+depositTotal(state.current)-spent,res=unpaid+fundReserve+variableBudgetRemaining(),safe=bank-res;
  var warning=document.getElementById('budgetShortfall');warning.hidden=safe>=0;warning.textContent=safe<0?'Your plan is $'+fmt(-safe)+' over your available balance. Adjust spending or savings for this paycheck.':'';document.getElementById('safeHero').textContent=fmt(safe);document.getElementById('bank').textContent=fmt(bank);document.getElementById('reserved').textContent=fmt(res);document.getElementById('safe').textContent=fmt(safe);document.getElementById('safe').className=safe<0?'badtext':'';
  var pi=document.getElementById('paycheck');pi.value=pay;pi.onchange=function(){state.paychecks[k]=Number(this.value||0);save();render()};
  document.getElementById('tabs').innerHTML=periods.map(function(x,i){return '<button class="tab '+(i===state.current?'active':'')+'" onclick="selectPeriod('+i+')">'+x.label+'</button>'}).join('');
  document.getElementById('bills').innerHTML=currentBills.length?currentBills.map(function(b){var key=billPaidKey(b);return '<div class="bill-row"><div class="bill-main"><input type="checkbox" '+(isBillPaid(b)?'checked':'')+' onchange="toggleBill2(\''+key+'\')"><div><strong>'+escapeHTML(b.name)+'</strong><div class="muted">'+prettyDate(b.date)+(b.repeat&&b.repeat!=='none'?' · '+b.repeat:'')+'</div></div></div><div class="bill-side"><div class="money">$'+fmt(b.amount)+'</div><button class="secondary tiny" onclick="'+(b.base?'editBaseBill('+b.period+','+b.index+')':'openAddBill('+b.extraId+')')+'">Edit</button>'+'<button class="danger tiny" onclick="'+(b.base?'openRemoveBaseBill('+b.period+','+b.index+')':'deleteExtraBill('+b.extraId+')')+'">Delete</button>'+'</div></div>'}).join(''):'<div class="muted">No bills in this paycheck period.</div>';
  var limits=budgetLimits();document.getElementById('budgets').innerHTML=Object.keys(limits).map(function(c){var b=limits[c],s=catSpent(c),r=b-s,pct=b?Math.min(100,s/b*100):0;return '<div class="cat"><div class="row"><strong>'+c+'</strong><span class="'+(r<0?'badtext':'good')+'">$'+fmt(Math.abs(r))+' '+(r<0?'over':'left')+'</span></div><div class="muted">$'+fmt(s)+' spent of $'+fmt(b)+'</div><div class="bar"><div class="fill '+(r<0?'bad':'')+'" style="width:'+pct+'%"></div></div></div>'}).join('');
  document.getElementById('budgetPageBudgets').innerHTML=document.getElementById('budgets').innerHTML;
- document.getElementById('history').innerHTML=ex.length?ex.map(function(x){return '<div class="tx"><div><strong>'+escapeHTML(x.note||x.category)+'</strong><div class="muted">'+escapeHTML(x.category)+(x.date?' · '+escapeHTML(x.date):'')+'</div></div><div class="money">$'+fmt(x.amount)+'</div><div class="expense-actions"><button class="secondary tiny" onclick="editExpense('+x.id+')">Edit</button><button class="danger tiny" onclick="removeExpense('+x.id+')">Remove</button></div></div>'}).join(''):'<div class="muted">No expenses for this paycheck yet.</div>';
+ renderActivity(ex);
  renderPaycheckForecast();renderGoals();renderCalendar();
  document.getElementById('expenseDate').value=p.start;document.getElementById('eventDate').value=p.start;
  var cp=document.getElementById('currentPayLabel');if(cp)cp.textContent=p.label+' paycheck';var bp=document.getElementById('budgetPayday');if(bp)bp.textContent='Payday '+p.label;
@@ -1193,6 +1219,7 @@ function openQuickAdd2(){
  '<button class="eh-sheetchoice" onclick="closeModal();quickPreset(\'other\')">Event</button>'+
  '<button class="eh-sheetchoice" onclick="closeModal();showQuickSchedule()">Schedule</button>'+
  '<button class="eh-sheetchoice" onclick="closeModal();quickExpense()">Expense</button>'+
+ '<button class="eh-sheetchoice" onclick="openDeposit()">Add Money</button>'+
  '<button class="eh-sheetchoice" onclick="closeModal();quickPreset(\'birthday\')">Birthday</button>'+
  '<button class="eh-sheetchoice" onclick="closeModal();quickMarina()">Marina Day</button>'+'<button class="eh-sheetchoice" onclick="closeModal();showPage(\'settingsPage\')">Settings &amp; Backup</button></div>';
  document.getElementById('modalbox').innerHTML=html;document.getElementById('modal').classList.add('show')
