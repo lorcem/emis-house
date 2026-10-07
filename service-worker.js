@@ -1,4 +1,4 @@
-const CACHE='emis-house-cohesive-sparkles-2026-10-07-v1';
+const CACHE='emis-house-mixed-sparkles-2026-10-07-v1';
 const ASSETS=["./", "./index.html", "./manifest.json", "./icons/icon-192.png", "./icons/house-512.png", "./icons/apple-touch-icon.png", "./icons/favicon.png", "./fonts/fredoka.ttf", "./fonts/dynapuff.ttf"];
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
