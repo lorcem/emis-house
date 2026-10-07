@@ -391,7 +391,7 @@ label{line-height:1.5}.form label>input,.form label>select{margin-top:6px}
 @media(max-width:430px){.app{padding-inline:14px!important}.card{padding:16px!important}.sectionhead{gap:10px}.card h2,.sectionhead h2{font-size:18px!important}.app-topbar h1{font-size:25px!important}.sectionhead>div:last-child{flex-wrap:wrap}.savings-goal-footer{align-items:flex-start}.goalhead span{font-size:12px}.budget-hero .safe-big{font-size:40px!important}}
 
 .week-time-event[role=button],.timeline-event[role=button],.eh-listrow[role=button]{cursor:pointer}.week-time-event:focus-visible,.timeline-event:focus-visible,.eh-listrow:focus-visible{outline:2px solid var(--fern);outline-offset:2px}
-.hero-date{display:grid;grid-template-columns:minmax(0,1fr) 90px;align-items:center;gap:12px}.house-doodle{display:block;width:90px;height:90px;object-fit:contain;border-radius:22px;mix-blend-mode:multiply}@media(max-width:380px){.hero-date{grid-template-columns:minmax(0,1fr) 72px;gap:8px}.house-doodle{width:72px;height:72px}}
+.hero-date{display:flex;align-items:center;min-height:154px;isolation:isolate}.hero-copy{position:relative;z-index:1;padding-right:8px}.house-doodle{position:absolute;right:8px;top:0;z-index:0;display:block;width:154px;height:154px;object-fit:contain;opacity:.11;pointer-events:none}.hero-date .funky-star{z-index:2}@media(max-width:380px){.house-doodle{right:0;width:144px;height:144px}.hero-date{min-height:144px}}
 </style>
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#768E78">
@@ -411,7 +411,7 @@ label{line-height:1.5}.form label>input,.form label>select{margin-top:6px}
 
 <main id="dashboard" class="page active">
 
-<div class="grid"></div><section class="hero-date"><div class="hero-copy"><h2 class="hero-greeting" id="greetingText">Good afternoon, Emi</h2><div class="hero-sub" id="todayDate"></div></div><img class="house-doodle" src="icons/icon-192.png" width="90" height="90" alt="" aria-hidden="true"></section><div id="marinaToday"></div>
+<div class="grid"></div><section class="hero-date"><div class="hero-copy"><h2 class="hero-greeting" id="greetingText">Good afternoon, Emi</h2><div class="hero-sub" id="todayDate"></div></div><img class="house-doodle" src="icons/house-background.png" width="154" height="154" alt="" aria-hidden="true"><div class="funky-star star-a"></div><div class="funky-star star-b"></div></section><div id="marinaToday"></div>
 <section class="week-card"><div class="sectionhead"><h2>This Week</h2></div><div class="weekbar" id="weekStrip"></div></section>
 <section class="card"><div class="sectionhead"><h2>Spending Budgets</h2><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="tiny" onclick="openDashboardExpense()">Add Expense</button><button class="secondary tiny" onclick="openManageBudgets()">Edit</button></div></div><div id="budgets"></div></section>
 <div class="dashboard-grid"><section class="card"><div class="sectionhead"><h2>Today's Schedule</h2><button class="secondary tiny" onclick="showQuickSchedule()">Add</button></div><div id="todaySchedule"></div></section><section class="card"><div class="sectionhead"><h2>Today's Tasks</h2><button class="secondary tiny" onclick="showQuickTask()">Add</button></div><div id="todayTasks"></div></section></div>

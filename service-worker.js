@@ -1,5 +1,5 @@
-const CACHE='emis-house-house-doodle-2026-10-07-v1';
-const ASSETS=["./", "./index.html", "./manifest.json", "./icons/icon-192.png", "./icons/house-512.png", "./icons/apple-touch-icon.png", "./icons/favicon.png"];
+const CACHE='emis-house-green-background-2026-10-07-v1';
+const ASSETS=["./", "./index.html", "./manifest.json", "./icons/icon-192.png", "./icons/house-512.png", "./icons/apple-touch-icon.png", "./icons/favicon.png", "./icons/house-background.png"];
 self.addEventListener('install',event=>{
  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(ASSETS)));
  self.skipWaiting();
